@@ -1,0 +1,22 @@
+{
+  "name": "@hoophq/rs-linux-x64",
+  "version": "0.0.0",
+  "description": "Prebuilt rs binary for Linux x64.",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "files": [
+    "bin/rs"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoophq/rs.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

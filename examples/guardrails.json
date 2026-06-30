@@ -1,0 +1,22 @@
+{
+  "rules": [
+    {
+      "name": "internal-hostnames",
+      "type": "regex",
+      "direction": "both",
+      "pattern": "\\b[a-z0-9-]+\\.internal\\.example\\.com\\b"
+    },
+    {
+      "name": "private-key-material",
+      "type": "deny_words",
+      "direction": "output",
+      "words": ["BEGIN RSA PRIVATE KEY", "BEGIN OPENSSH PRIVATE KEY"]
+    },
+    {
+      "name": "production-database",
+      "type": "deny_words",
+      "direction": "input",
+      "words": ["prod-db", "production database", "DROP TABLE"]
+    }
+  ]
+}

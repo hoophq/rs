@@ -1,0 +1,22 @@
+{
+  "name": "@hoophq/rs-win32-x64",
+  "version": "0.0.0",
+  "description": "Prebuilt rs binary for Windows x64.",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "files": [
+    "bin/rs.exe"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoophq/rs.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

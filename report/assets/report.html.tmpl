@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Risk Analysis Report</title>
+<style>{{.CSS}}</style>
+</head>
+<body>
+<div class="rr-root">
+  <div class="hoop-bg-grid" aria-hidden="true"></div>
+
+  <div class="rr-page">
+    <div class="rr-top">
+      <svg width="40" height="40" viewBox="0 0 148 148" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M96.4167 71.4077C99.0238 71.5517 101.631 71.7389 104.238 71.9118L106.6 72.0558C114.055 73.1865 121.677 71.9359 128.38 68.4821C135.083 65.0282 140.525 59.5473 143.931 52.82C147.337 46.0928 148.533 38.4622 147.349 31.0153C146.166 23.5685 142.662 16.685 137.338 11.3455C132.014 6.00604 125.14 2.48279 117.697 1.27765C110.254 0.0725119 102.62 1.24695 95.8826 4.63367C89.1456 8.02038 83.6491 13.4467 80.176 20.1396C76.7029 26.8325 75.4304 34.4507 76.5397 41.909C76.5397 42.73 76.6405 43.551 76.6982 44.372C76.871 46.9791 77.0582 49.6005 77.1879 52.2076C77.5862 56.2358 77.0945 60.3023 75.7475 64.1194C74.7082 66.7342 73.1556 69.1144 71.1816 71.1196C69.1658 73.1255 66.7584 74.6945 64.1094 75.7287C60.2922 77.0757 56.2257 77.5675 52.1976 77.1691C49.5905 77.0395 46.9691 76.8522 44.362 76.6794L41.899 76.5209C34.4419 75.414 26.8257 76.688 20.1348 80.1613C13.4439 83.6347 8.01933 89.1305 4.63351 95.8662C1.24769 102.602 0.0732001 110.234 1.27728 117.676C2.48136 125.118 6.00262 131.99 11.3397 137.315C16.6768 142.639 23.5576 146.144 31.0024 147.33C38.4472 148.516 46.0766 147.324 52.8041 143.922C59.5317 140.52 65.0144 135.082 68.4718 128.383C71.9292 121.684 73.1849 114.065 72.0602 106.61C72.0602 105.818 71.9738 105.04 71.9162 104.248C71.7433 101.641 71.5561 99.0338 71.412 96.4268C71.0353 92.3933 71.5517 88.3263 72.9244 84.515C73.9445 81.8936 75.4939 79.5106 77.476 77.5148C79.4819 75.5453 81.8621 73.9976 84.4761 72.9633C88.2932 71.5717 92.3705 71.0405 96.4167 71.4077Z" fill="#F7F7F7"/>
+        <path d="M36.7283 63.0103C51.238 63.0103 63.0005 51.2478 63.0005 36.7381C63.0005 22.2283 51.238 10.4658 36.7283 10.4658C22.2185 10.4658 10.4561 22.2283 10.4561 36.7381C10.4561 51.2478 22.2185 63.0103 36.7283 63.0103Z" fill="#F7F7F7"/>
+        <path d="M111.944 138.226C126.454 138.226 138.216 126.464 138.216 111.954C138.216 97.4441 126.454 85.6816 111.944 85.6816C97.4344 85.6816 85.6719 97.4441 85.6719 111.954C85.6719 126.464 97.4344 138.226 111.944 138.226Z" fill="#F7F7F7"/>
+      </svg>
+      <span class="rr-top-logo">hoop.dev</span>
+    </div>
+
+    <div class="rr-window">
+      <div class="rr-window-bar">
+        <div class="rr-dots"><span class="rr-dot"></span><span class="rr-dot"></span><span class="rr-dot"></span></div>
+        <span class="rr-window-name">risk-report.html</span>
+        <span class="rr-window-meta">generated locally · {{.GeneratedLabel}}</span>
+      </div>
+
+      <div class="rr-body">
+        <div class="rr-headline">
+          <div class="rr-brand">
+            <svg width="18" height="18" viewBox="0 0 148 148" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M96.4167 71.4077C99.0238 71.5517 101.631 71.7389 104.238 71.9118L106.6 72.0558C114.055 73.1865 121.677 71.9359 128.38 68.4821C135.083 65.0282 140.525 59.5473 143.931 52.82C147.337 46.0928 148.533 38.4622 147.349 31.0153C146.166 23.5685 142.662 16.685 137.338 11.3455C132.014 6.00604 125.14 2.48279 117.697 1.27765C110.254 0.0725119 102.62 1.24695 95.8826 4.63367C89.1456 8.02038 83.6491 13.4467 80.176 20.1396C76.7029 26.8325 75.4304 34.4507 76.5397 41.909C76.5397 42.73 76.6405 43.551 76.6982 44.372C76.871 46.9791 77.0582 49.6005 77.1879 52.2076C77.5862 56.2358 77.0945 60.3023 75.7475 64.1194C74.7082 66.7342 73.1556 69.1144 71.1816 71.1196C69.1658 73.1255 66.7584 74.6945 64.1094 75.7287C60.2922 77.0757 56.2257 77.5675 52.1976 77.1691C49.5905 77.0395 46.9691 76.8522 44.362 76.6794L41.899 76.5209C34.4419 75.414 26.8257 76.688 20.1348 80.1613C13.4439 83.6347 8.01933 89.1305 4.63351 95.8662C1.24769 102.602 0.0732001 110.234 1.27728 117.676C2.48136 125.118 6.00262 131.99 11.3397 137.315C16.6768 142.639 23.5576 146.144 31.0024 147.33C38.4472 148.516 46.0766 147.324 52.8041 143.922C59.5317 140.52 65.0144 135.082 68.4718 128.383C71.9292 121.684 73.1849 114.065 72.0602 106.61C72.0602 105.818 71.9738 105.04 71.9162 104.248C71.7433 101.641 71.5561 99.0338 71.412 96.4268C71.0353 92.3933 71.5517 88.3263 72.9244 84.515C73.9445 81.8936 75.4939 79.5106 77.476 77.5148C79.4819 75.5453 81.8621 73.9976 84.4761 72.9633C88.2932 71.5717 92.3705 71.0405 96.4167 71.4077Z" fill="#F7F7F7"/>
+              <path d="M36.7283 63.0103C51.238 63.0103 63.0005 51.2478 63.0005 36.7381C63.0005 22.2283 51.238 10.4658 36.7283 10.4658C22.2185 10.4658 10.4561 22.2283 10.4561 36.7381C10.4561 51.2478 22.2185 63.0103 36.7283 63.0103Z" fill="#F7F7F7"/>
+              <path d="M111.944 138.226C126.454 138.226 138.216 126.464 138.216 111.954C138.216 97.4441 126.454 85.6816 111.944 85.6816C97.4344 85.6816 85.6719 97.4441 85.6719 111.954C85.6719 126.464 97.4344 138.226 111.944 138.226Z" fill="#F7F7F7"/>
+            </svg>
+            <span class="rr-brand-name">risk-analyzer</span>
+            <span class="rr-brand-ver">{{.Version}}</span>
+          </div>
+          <h1 class="rr-title">Risk Analysis Report</h1>
+          <p class="rr-pitch">
+            Generated locally by the open-source CLI. hoop.dev brings this same visibility to every AI agent in production, automatically and at scale.
+            <a href="https://hoop.dev" target="_blank" rel="noreferrer" class="rr-pitch-link">Get to know hoop.dev →</a>
+          </p>
+          <div class="rr-meta-row">
+            <span class="rr-meta-chip">{{.SourcesLabel}}</span>
+            <span class="rr-meta-chip">{{.ScopeLabel}}</span>
+            <span class="rr-meta-chip">{{.WindowLabel}}</span>
+            <span class="rr-meta-chip rr-meta-chip-ok">Computed locally · nothing sent to the gateway</span>
+          </div>
+        </div>
+
+        <div class="rr-summary">
+          <div class="rr-donut-wrap">
+            <div class="rr-donut">
+              <svg viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(247,247,247,0.06)" stroke-width="22"></circle>
+                {{range .Donut}}<circle class="rr-seg" data-tier="{{.Key}}" cx="100" cy="100" r="80" fill="none" stroke="{{.Color}}" stroke-width="22" stroke-dasharray="{{.Dash}}" stroke-dashoffset="{{.Offset}}" stroke-linecap="butt"></circle>{{end}}
+              </svg>
+              <div class="rr-donut-center">
+                <div class="rr-donut-big">{{.SessionsLabel}}</div>
+                <div class="rr-donut-cap">sessions</div>
+              </div>
+            </div>
+            <div class="rr-donut-label">Sessions by risk · click to filter</div>
+          </div>
+
+          <div class="rr-summary-right">
+            <div class="rr-score">
+              <span class="rr-score-num">{{.Score}}</span>
+              <span class="rr-score-denom">/100</span>
+              <span class="rr-score-label">Security Score</span>
+            </div>
+            <div class="rr-breakdown">
+              {{range .Tiers}}
+              <button type="button" class="rr-bd-row" data-tier="{{.Key}}" data-count="{{.CountLabel}}" data-label="{{.Label}}">
+                <span class="rr-bd-accent" style="background: {{.Color}}"></span>
+                <div>
+                  <div class="rr-bd-label">{{.Label}}</div>
+                  <div class="rr-bd-note">{{.Note}}</div>
+                </div>
+                <span class="rr-bd-sess">{{.CountLabel}} sess</span>
+                <span class="rr-bd-pct">{{.Pct}}%</span>
+              </button>
+              {{end}}
+            </div>
+          </div>
+        </div>
+
+        <div class="rr-kpis">
+          <div class="rr-kpi">
+            <div class="rr-kpi-label">Sessions scanned</div>
+            <div class="rr-kpi-num">{{.KpiSessions}}</div>
+            <div class="rr-kpi-sub">{{.KpiSessionsSub}}</div>
+          </div>
+          <div class="rr-kpi">
+            <div class="rr-kpi-label">Critical sessions</div>
+            <div class="rr-kpi-num">{{.KpiCritical}}</div>
+            <div class="rr-kpi-sub">{{.KpiCriticalSub}}</div>
+          </div>
+          <div class="rr-kpi">
+            <div class="rr-kpi-label">PII findings</div>
+            <div class="rr-kpi-num">{{.KpiFindings}}</div>
+            <div class="rr-kpi-sub">{{.KpiFindingsSub}}</div>
+          </div>
+        </div>
+
+        <section class="rr-section">
+          <div class="rr-section-head">
+            <h2 class="rr-section-title">PII Detection</h2>
+            <span class="rr-section-sub">{{.PIISub}}</span>
+          </div>
+          <div class="rr-pii-filters">
+            {{range .Filters}}<button type="button" class="rr-filter{{if .Active}} rr-filter-active{{end}}" data-sev="{{.Key}}">{{.Label}}<span class="rr-filter-count">{{.Count}}</span></button>{{end}}
+          </div>
+          <div class="rr-pii-table">
+            {{if .PII}}{{range .PII}}
+            <div class="rr-pii-row" data-sev="{{.Severity}}">
+              <div class="rr-pii-entity">
+                <span class="rr-pii-dot rr-pii-dot-{{.Severity}}"></span>
+                <span class="rr-pii-name">{{.Entity}}</span>
+              </div>
+              <div class="rr-pii-family">{{.Family}} · {{.Severity}} severity</div>
+              <div class="rr-bar-wrap"><div class="rr-bar" style="width: {{.BarPct}}%"></div></div>
+              <div class="rr-pii-total">{{.TotalLabel}}</div>
+              <div class="rr-pii-sess">{{.SessionsLabel}} sess</div>
+            </div>
+            {{end}}{{else}}<div class="rr-empty">No PII detected in this scan.</div>{{end}}
+          </div>
+        </section>
+
+        <section class="rr-section">
+          <div class="rr-section-head">
+            <h2 class="rr-section-title">Most exposed sessions</h2>
+            <span class="rr-section-sub">ranked by exposure-weighted findings</span>
+          </div>
+          <div class="rr-feed">
+            {{if .Sessions}}{{range .Sessions}}
+            <div class="rr-feed-row" data-risk="{{.Risk}}">
+              <span class="rr-feed-risk rr-feed-risk-{{.Risk}}"><span class="rr-feed-dot"></span>{{.Risk}}</span>
+              <span class="rr-feed-id">{{.ID}}</span>
+              <span class="rr-feed-tool">{{.Tool}}</span>
+              <span class="rr-feed-findings">{{.FindingsLabel}} findings</span>
+              <span class="rr-feed-date">{{.Date}}</span>
+            </div>
+            {{end}}{{else}}<div class="rr-empty">No sessions scanned.</div>{{end}}
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <a href="https://github.com/hoophq" target="_blank" rel="noreferrer" class="rr-cta">
+      <div class="rr-cta-text">
+        <p class="rr-cta-title">Run it yourself, or read the source.</p>
+        <p class="rr-cta-body">Risk Analyzer is open source. Install the CLI, inspect every line, and contribute on GitHub.</p>
+      </div>
+      <span class="rr-cta-btn">View on GitHub →</span>
+    </a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var activeTier = null;
+  var donutBig = document.querySelector(".rr-donut-big");
+  var donutCap = document.querySelector(".rr-donut-cap");
+  var defaultBig = donutBig ? donutBig.textContent : "";
+  var defaultCap = donutCap ? donutCap.textContent : "";
+
+  function setTier(key) {
+    activeTier = activeTier === key ? null : key;
+    document.querySelectorAll(".rr-seg").forEach(function (el) {
+      el.style.opacity = activeTier && el.getAttribute("data-tier") !== activeTier ? "0.18" : "1";
+    });
+    document.querySelectorAll(".rr-bd-row").forEach(function (el) {
+      el.classList.toggle("rr-bd-row-active", !!activeTier && el.getAttribute("data-tier") === activeTier);
+    });
+    if (activeTier) {
+      var row = document.querySelector('.rr-bd-row[data-tier="' + activeTier + '"]');
+      if (row && donutBig) {
+        donutBig.textContent = row.getAttribute("data-count");
+        donutCap.textContent = row.getAttribute("data-label");
+      }
+    } else if (donutBig) {
+      donutBig.textContent = defaultBig;
+      donutCap.textContent = defaultCap;
+    }
+    document.querySelectorAll(".rr-feed-row").forEach(function (el) {
+      var show = !activeTier || el.getAttribute("data-risk") === activeTier;
+      el.classList.toggle("rr-hidden", !show);
+    });
+  }
+
+  document.querySelectorAll("[data-tier]").forEach(function (el) {
+    el.addEventListener("click", function () { setTier(el.getAttribute("data-tier")); });
+  });
+
+  var sev = "all";
+  function setSev(s) {
+    sev = s;
+    document.querySelectorAll(".rr-filter").forEach(function (el) {
+      el.classList.toggle("rr-filter-active", el.getAttribute("data-sev") === sev);
+    });
+    document.querySelectorAll(".rr-pii-row").forEach(function (el) {
+      var show = sev === "all" || el.getAttribute("data-sev") === sev;
+      el.classList.toggle("rr-hidden", !show);
+    });
+  }
+  document.querySelectorAll(".rr-filter").forEach(function (el) {
+    el.addEventListener("click", function () { setSev(el.getAttribute("data-sev")); });
+  });
+})();
+</script>
+</body>
+</html>
