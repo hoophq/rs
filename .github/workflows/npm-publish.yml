@@ -1,0 +1,69 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build binaries & publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Resolve version from tag
+        id: v
+        run: |
+          set -euo pipefail
+          # Go tags are v-prefixed (vX.Y.Z); npm versions are not. Strip the v
+          # and reject anything that isn't a clean release tag.
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          if ! echo "$TAG_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Tag '${GITHUB_REF#refs/tags/}' is not a vX.Y.Z release tag; nothing to publish."
+            exit 1
+          fi
+          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publishing version $TAG_VERSION"
+
+      - name: Stamp versions & cross-compile binaries
+        run: node npm/build.mjs "${{ steps.v.outputs.version }}"
+
+      - name: Publish platform packages, then the launcher
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Idempotent: a re-run after a partial publish must not fail on the
+          # packages that already reached the registry.
+          publish() {
+            dir="$1"
+            name=$(node -p "require('./${dir}/package.json').name")
+            version=$(node -p "require('./${dir}/package.json').version")
+            if npm view "${name}@${version}" version >/dev/null 2>&1; then
+              echo "${name}@${version} already published — skipping"
+            else
+              echo "publishing ${name}@${version}"
+              npm publish "${dir}" --access public
+            fi
+          }
+
+          # Platform packages first so the launcher's optionalDependencies can be
+          # resolved the instant it appears in the registry.
+          for dir in npm/rs-*/; do
+            publish "${dir%/}"
+          done
+          publish npm/rs

@@ -1,0 +1,13 @@
+# compiled binary
+/rs
+
+# generated reports
+risk-report.html
+risk-report.json
+*.png
+
+# local incremental scan state
+.risk-analyzer/
+
+# prebuilt binaries injected into the npm platform packages by npm/build.mjs
+/npm/rs-*/bin/

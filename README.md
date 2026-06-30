@@ -5,10 +5,9 @@ and secrets **entirely on your machine** — no gateway, no network — and prod
 a risk summary in the terminal plus a self-contained HTML report you can open or
 share.
 
-It is a sibling of [`hoop-session-scanner`](../hoop-session-scanner), but where
-that tool sends content to a hoop gateway's `/api/dlp/analyze` endpoint, `rs`
-detects everything locally with a built-in analyzer modeled on
-[Presidio](../rs-presidio).
+A built-in analyzer does the detection in-process: regex recognizers backed by
+validators (Luhn, IBAN mod-97, SSN range rules). No external DLP service, no API
+calls.
 
 ```
 ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
@@ -90,7 +89,7 @@ below the `-min-score` threshold instead of flooding the report.
 
 > **Note on NER:** `PERSON`/`LOCATION`-style entities that require an NLP model
 > are intentionally **not** detected in this version. The analyzer is exposed
-> behind a small `analyze.Analyzer` interface so a future `presidio-go` engine
+> behind a small `analyze.Analyzer` interface so a future NLP-backed engine
 > can be dropped in without touching the pipeline.
 
 ## Risk model

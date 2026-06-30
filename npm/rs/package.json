@@ -1,0 +1,39 @@
+{
+  "name": "@hoophq/rs",
+  "version": "0.0.0",
+  "description": "Local PII and secrets risk scanner for AI coding sessions (Claude Code, Cursor, OpenCode). No gateway, no network.",
+  "bin": {
+    "rs": "bin/rs.js"
+  },
+  "files": [
+    "bin/rs.js"
+  ],
+  "optionalDependencies": {
+    "@hoophq/rs-darwin-arm64": "0.0.0",
+    "@hoophq/rs-darwin-x64": "0.0.0",
+    "@hoophq/rs-linux-x64": "0.0.0",
+    "@hoophq/rs-linux-arm64": "0.0.0",
+    "@hoophq/rs-win32-x64": "0.0.0"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoophq/rs.git"
+  },
+  "homepage": "https://github.com/hoophq/rs#readme",
+  "keywords": [
+    "pii",
+    "secrets",
+    "security",
+    "ai",
+    "scanner",
+    "guardrails",
+    "hoop"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@hoophq/rs-darwin-arm64",
+  "version": "0.0.0",
+  "description": "Prebuilt rs binary for macOS arm64.",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "bin/rs"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoophq/rs.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
