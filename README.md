@@ -1,4 +1,4 @@
-# rs: Risk Summary for local AI coding sessions
+# Risk Summary for local AI coding sessions
 
 `rs` (Risk Summary) scans your local AI coding sessions (Claude Code, Cursor,
 OpenCode) for PII and secrets **entirely on your machine** (no gateway, no
