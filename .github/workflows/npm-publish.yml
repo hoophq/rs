@@ -85,7 +85,10 @@ jobs:
               echo "${name}@${version} already published; skipping"
             else
               echo "publishing ${name}@${version}"
-              npm publish "${dir}" --access public
+              # The ./ is required: `npm publish foo/bar` is parsed as the GitHub
+              # shorthand github:foo/bar, not a local folder, and sends npm off to
+              # `git ls-remote`. A leading ./ forces the folder publish.
+              npm publish "./${dir}" --access public
             fi
           }
 
