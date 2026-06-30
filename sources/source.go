@@ -27,8 +27,8 @@ type Source interface {
 const maxLineSize = 16 * 1024 * 1024
 
 // readJSONLines reads complete JSON lines from path starting at offset and
-// returns the raw lines plus the offset of the last fully terminated line.
-// A trailing line without a newline is left for the next scan, since the tool
+// returns the raw lines plus the offset of the last newline-terminated line.
+// A trailing line without a newline waits for the next scan, since the tool
 // may still be appending to it.
 func readJSONLines(path string, offset int64) (lines []json.RawMessage, newOffset int64, err error) {
 	f, err := os.Open(path)
@@ -71,8 +71,8 @@ func readJSONLines(path string, offset int64) (lines []json.RawMessage, newOffse
 	}
 }
 
-// readFullLine reads one newline-terminated line of arbitrary length.
-// io.EOF is returned for a trailing chunk that has no newline yet.
+// readFullLine reads one newline-terminated line of arbitrary length. It
+// returns io.EOF for a trailing chunk that has no newline yet.
 func readFullLine(r *bufio.Reader) ([]byte, error) {
 	var full []byte
 	for {

@@ -25,7 +25,7 @@ type pattern struct {
 // post-match logic:
 //
 //   - validate: a true checksum (Luhn, IBAN mod-97). Passing one is strong
-//     evidence, so the match is promoted to score 1.0; failing it drops the
+//     evidence, so it promotes the match to score 1.0; failing it drops the
 //     match. Only use this for actual checksums, never for format plausibility.
 //   - filter: a keep/drop predicate that preserves the pattern's own score.
 //     Used for format checks (SSN range rules) and the secret heuristics, where
@@ -41,9 +41,9 @@ type recognizer struct {
 }
 
 // Stub is a dependency-free regex analyzer covering structured PII and the
-// secret types that matter most for AI coding sessions. It is the zero-import
-// fallback engine (select it with -engine stub); the default engine is alcatraz
-// (see alcatraz.go).
+// secret types common in AI coding sessions. It is the zero-import fallback
+// engine (select it with -engine stub); the default engine is alcatraz (see
+// alcatraz.go).
 type Stub struct {
 	recognizers []recognizer
 	threshold   float64
@@ -80,8 +80,8 @@ func NewStub() *Stub {
 				pat(`\b\d{9}\b`, 0.3, 0),
 			},
 			// Range rules are a format check, not a checksum: gate, don't
-			// promote. The bare 9-digit form stays at 0.3 and is filtered out
-			// by the confidence threshold, leaving the dashed form (0.85).
+			// promote. The bare 9-digit form stays at 0.3 and falls below the
+			// confidence threshold, leaving the dashed form (0.85).
 			filter: validSSN,
 		},
 		{
@@ -168,8 +168,8 @@ func (s *Stub) Analyze(text string) ([]Finding, error) {
 	return dedupe(results), nil
 }
 
-// dedupe removes zero-score findings and, within the same entity type,
-// overlapping spans — keeping the higher-scoring/wider span.
+// dedupe removes zero-score findings and, within the same entity type, collapses
+// overlapping spans, keeping the higher-scoring/wider span.
 func dedupe(results []Finding) []Finding {
 	var filtered []Finding
 	for _, r := range results {

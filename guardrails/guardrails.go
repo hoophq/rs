@@ -1,8 +1,8 @@
 // Package guardrails validates session text against a local rules file. Rules
-// are direction-aware: user-typed content is checked against input rules,
-// assistant/tool output against output rules — mirroring how a proxy validates
-// a live session. The gateway previously supplied these rules; here they come
-// from a JSON file the user controls.
+// are direction-aware: input rules check user-typed content, output rules check
+// assistant/tool output, mirroring how a proxy validates a live session. The
+// gateway used to supply these rules; here they come from a JSON file the user
+// controls.
 package guardrails
 
 import (

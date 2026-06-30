@@ -1,8 +1,8 @@
-# rs — Risk Summary for local AI coding sessions
+# rs: Risk Summary for local AI coding sessions
 
 `rs` (Risk Summary) scans your local AI coding sessions (Claude Code, Cursor,
-OpenCode) for PII and secrets **entirely on your machine** — no gateway, no
-network — and produces a risk summary in the terminal plus a self-contained HTML
+OpenCode) for PII and secrets **entirely on your machine** (no gateway, no
+network) and produces a risk summary in the terminal plus a self-contained HTML
 report you can open or share.
 
 Detection runs in-process. The default engine pairs the
@@ -18,7 +18,18 @@ available with `-engine stub`. No external DLP service, no API calls.
 └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘
 ```
 
-## Build
+## Install
+
+```bash
+npx @hoophq/rs            # run without installing
+npm i -g @hoophq/rs && rs # or install the rs command globally
+```
+
+npm pulls a prebuilt binary for your platform through optional dependencies
+(`@hoophq/rs-<os>-<arch>`), so there is no compile step. Supported platforms:
+macOS (arm64, x64), Linux (x64, arm64), Windows (x64).
+
+### From source
 
 ```bash
 go build -o rs ./cmd/rs
@@ -76,8 +87,8 @@ content (useful for "what changed since last time").
 
 ## What it detects
 
-Structured PII (via the alcatraz engine) plus the secret types that matter most
-for coding sessions (via rs's own secrets pack):
+Structured PII (via the alcatraz engine) plus the secret types common in coding
+sessions (via rs's own secrets pack):
 
 - **Secrets**: API keys (GitHub, OpenAI, Google, Slack, Stripe, JWT, and a
   generic high-entropy `key = value` heuristic), AWS access keys, private keys,
@@ -93,10 +104,9 @@ Detection is **pattern + validator** based: regexes plus checksum and format
 validators (Luhn, IBAN mod-97, SSN/national-ID range rules). Matches below the
 `-min-score` threshold (default 0.4) are dropped.
 
-> **Note on NER:** `PERSON`/`LOCATION`-style entities that require an NLP model
-> are intentionally **not** detected in this version. The analyzer is exposed
-> behind a small `analyze.Analyzer` interface so a future NLP-backed engine
-> can be dropped in without touching the pipeline.
+> **Note on NER:** `PERSON`/`LOCATION`-style entities that need an NLP model stay
+> out of this version. The analyzer sits behind a small `analyze.Analyzer`
+> interface, so a future NLP-backed engine drops in without touching the pipeline.
 
 ## Risk model
 
@@ -128,8 +138,8 @@ assistant/tool output). See [`examples/guardrails.json`](examples/guardrails.jso
 ## Privacy
 
 Everything runs locally. The HTML/JSON reports contain **only** entity types,
-counts, severities, and session identifiers — never the matched values. Nothing
-is ever sent anywhere.
+counts, severities, and session identifiers, never the matched values. Nothing
+leaves your machine.
 
 ## Layout
 

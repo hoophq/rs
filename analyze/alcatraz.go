@@ -6,8 +6,8 @@ import (
 )
 
 // ignoredEntities are alcatraz detections that are noise for an AI-session risk
-// report and never represent a PII/secret exposure (every log line carries a
-// date). They are dropped before findings reach the risk model.
+// report and never a PII/secret exposure (every log line carries a date). rs
+// drops them before findings reach the risk model.
 var ignoredEntities = map[string]bool{
 	"DATE_TIME": true,
 }

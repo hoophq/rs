@@ -4,9 +4,9 @@ package types
 
 import "time"
 
-// Role classifies who produced a message. It determines the guardrail
-// direction used during analysis: user content is validated against input
-// rules, assistant and tool content against output rules.
+// Role classifies who produced a message. It sets the guardrail direction for
+// analysis: input rules check user content, output rules check assistant and
+// tool content.
 type Role string
 
 const (

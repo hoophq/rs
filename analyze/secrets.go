@@ -8,9 +8,9 @@ import (
 // secretSpec is an engine-agnostic definition of a secret pattern: a named
 // regex with a confidence score, the entity type it emits, the capture group
 // that locates the value (0 = whole match), and an optional keep/drop filter on
-// that value. Both detection engines — the alcatraz adapter and the regex Stub —
+// that value. Both detection engines (the alcatraz adapter and the regex Stub)
 // build their native recognizers from this one list, so the secrets pack has a
-// single source of truth.
+// single source.
 type secretSpec struct {
 	name   string
 	entity string
@@ -20,9 +20,9 @@ type secretSpec struct {
 	filter func(string) bool
 }
 
-// secretSpecs is the secrets pack: the credential types that dominate exposure
-// in AI coding sessions. alcatraz detects none of these (it covers structured
-// PII only), so rs supplies them on top of whichever engine is selected.
+// secretSpecs is the secrets pack: the credential types common in AI coding
+// sessions. alcatraz detects none of these (it covers structured PII only), so
+// rs supplies them on top of whichever engine is selected.
 var secretSpecs = []secretSpec{
 	{"aws-access-key", "AWS_ACCESS_KEY", `\b(?:AKIA|ASIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA)[A-Z0-9]{16}\b`, 1.0, 0, nil},
 	{"private-key", "PRIVATE_KEY", `-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----`, 1.0, 0, nil},
