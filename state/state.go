@@ -11,17 +11,17 @@ import (
 )
 
 // State maps file paths to the byte offset already consumed. JSONL session
-// files (Claude, Cursor) are append-only, so an offset fully describes the
-// processed prefix. OpenCode part files are immutable once written, so they
-// are marked consumed at their full size.
+// files (Claude, Cursor) are append-only, so an offset describes the processed
+// prefix. OpenCode part files are immutable once written, so rs marks them
+// consumed at their full size.
 type State struct {
 	path  string
 	Files map[string]int64 `json:"files"`
 }
 
-// NewMemory returns an empty, file-less state. It is used for full snapshot
-// scans where progress is not persisted: every Offset lookup returns 0, so the
-// sources read all available content. A memory state must not be Saved.
+// NewMemory returns an empty, file-less state for full snapshot scans that do
+// not persist progress: every Offset lookup returns 0, so the sources read all
+// available content. Never Save a memory state.
 func NewMemory() *State {
 	return &State{Files: map[string]int64{}}
 }

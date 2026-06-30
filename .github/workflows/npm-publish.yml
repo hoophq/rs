@@ -1,19 +1,61 @@
 name: Publish to npm
 
+# Auto Release creates the vX.Y.Z tag with GITHUB_TOKEN, and a tag pushed by
+# GITHUB_TOKEN does not start a `push: tags` workflow (GitHub blocks that loop).
+# So publishing chains off Auto Release's completion and ships the version it
+# tagged, rather than triggering on the tag push directly.
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_run:
+    workflows: ["Auto Release"]
+    types: [completed]
 
 permissions:
   contents: read
 
 jobs:
+  resolve:
+    name: Resolve release tag
+    runs-on: ubuntu-latest
+    # Auto Release runs on every push to main; act only on successful runs.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      publish: ${{ steps.tag.outputs.publish }}
+      version: ${{ steps.tag.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The exact commit Auto Release ran on. fetch-depth: 0 brings the tags
+          # so we can read the version tag it created at that commit.
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Find the release tag at this commit
+        id: tag
+        run: |
+          set -euo pipefail
+          # Auto Release tags the released commit vX.Y.Z, or tags nothing for a
+          # skip-release PR or a direct push. Bind the published version to that
+          # tag so the source and the version always match, and skip when there
+          # is no tag.
+          TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 || true)
+          if [ -z "$TAG" ]; then
+            echo "No release tag at ${{ github.event.workflow_run.head_sha }}; nothing to publish."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+            echo "Publishing ${TAG}"
+          fi
+
   publish:
     name: Build binaries & publish
+    needs: resolve
+    if: ${{ needs.resolve.outputs.publish == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - uses: actions/setup-go@v5
         with:
@@ -24,22 +66,8 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org
 
-      - name: Resolve version from tag
-        id: v
-        run: |
-          set -euo pipefail
-          # Go tags are v-prefixed (vX.Y.Z); npm versions are not. Strip the v
-          # and reject anything that isn't a clean release tag.
-          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          if ! echo "$TAG_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "::error::Tag '${GITHUB_REF#refs/tags/}' is not a vX.Y.Z release tag; nothing to publish."
-            exit 1
-          fi
-          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
-          echo "Publishing version $TAG_VERSION"
-
       - name: Stamp versions & cross-compile binaries
-        run: node npm/build.mjs "${{ steps.v.outputs.version }}"
+        run: node npm/build.mjs "${{ needs.resolve.outputs.version }}"
 
       - name: Publish platform packages, then the launcher
         env:
@@ -54,7 +82,7 @@ jobs:
             name=$(node -p "require('./${dir}/package.json').name")
             version=$(node -p "require('./${dir}/package.json').version")
             if npm view "${name}@${version}" version >/dev/null 2>&1; then
-              echo "${name}@${version} already published — skipping"
+              echo "${name}@${version} already published; skipping"
             else
               echo "publishing ${name}@${version}"
               npm publish "${dir}" --access public

@@ -1,7 +1,7 @@
 // Package risk turns raw detections into the risk model rendered by the
 // report: per-session tiers, severity-weighted exposure, entity aggregates and
 // an overall security score. The severity/family catalog and the scoring rules
-// are a faithful port of the dashboard's data adapter so the numbers match.
+// port the dashboard's data adapter, so the numbers match.
 package risk
 
 // Severity drives the traffic-light risk tiers.
@@ -37,7 +37,7 @@ type EntityInfo struct {
 // names are the same canonical set the alcatraz engine emits, so the model
 // stays compatible across engines. Unknown types default to low / "Other".
 var catalog = map[string]EntityInfo{
-	// Secrets — the top exposure for AI coding sessions.
+	// Secrets.
 	"API_KEY":        {SeverityHigh, "Secret"},
 	"AWS_ACCESS_KEY": {SeverityHigh, "Secret"},
 	"PRIVATE_KEY":    {SeverityHigh, "Secret"},
@@ -49,14 +49,14 @@ var catalog = map[string]EntityInfo{
 	"IBAN_CODE":      {SeverityHigh, "Financial"},
 	"CRYPTO":         {SeverityHigh, "Financial"},
 	"ABA_ROUTING":    {SeverityMedium, "Financial"},
-	// Business / tax registration numbers are typically public.
+	// Business and tax registration numbers; public in most cases.
 	"AU_ABN":      {SeverityLow, "Financial"},
 	"AU_ACN":      {SeverityLow, "Financial"},
 	"IN_GSTIN":    {SeverityLow, "Financial"},
 	"IT_VAT_CODE": {SeverityLow, "Financial"},
 	"SG_UEN":      {SeverityLow, "Financial"},
 
-	// Government / national identifiers — personal ones are high severity.
+	// Government and national IDs; personal ones rank high severity.
 	"US_SSN":                    {SeverityHigh, "Government ID"},
 	"US_ITIN":                   {SeverityHigh, "Government ID"},
 	"UK_NINO":                   {SeverityHigh, "Government ID"},
@@ -92,7 +92,7 @@ var catalog = map[string]EntityInfo{
 	"IP_ADDRESS":    {SeverityMedium, "Network"},
 	"URL":           {SeverityLow, "Network"},
 
-	// Identity (NER — requires a model; reserved for a future engine).
+	// Identity (NER: needs a model; reserved for a future engine).
 	"PERSON":   {SeverityLow, "Identity"},
 	"LOCATION": {SeverityLow, "Identity"},
 	"NRP":      {SeverityLow, "Identity"},

@@ -1,5 +1,5 @@
 // Command rs scans local AI coding sessions (Claude Code, Cursor, OpenCode)
-// for PII and secrets entirely on the machine — no gateway, no network — and
+// for PII and secrets entirely on the machine (no gateway, no network) and
 // renders a risk summary to the terminal and a self-contained HTML report.
 package main
 
