@@ -1,13 +1,14 @@
-# rs — local AI session risk analyzer
+# rs — Risk Summary for local AI coding sessions
 
-`rs` scans your local AI coding sessions (Claude Code, Cursor, OpenCode) for PII
-and secrets **entirely on your machine** — no gateway, no network — and produces
-a risk summary in the terminal plus a self-contained HTML report you can open or
-share.
+`rs` (Risk Summary) scans your local AI coding sessions (Claude Code, Cursor,
+OpenCode) for PII and secrets **entirely on your machine** — no gateway, no
+network — and produces a risk summary in the terminal plus a self-contained HTML
+report you can open or share.
 
-A built-in analyzer does the detection in-process: regex recognizers backed by
-validators (Luhn, IBAN mod-97, SSN range rules). No external DLP service, no API
-calls.
+Detection runs in-process. The default engine pairs the
+[alcatraz](https://github.com/hoophq/alcatraz) PII library with a local secrets
+pack (API keys, private keys, passwords); a zero-dependency regex engine is also
+available with `-engine stub`. No external DLP service, no API calls.
 
 ```
 ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
@@ -23,7 +24,8 @@ calls.
 go build -o rs ./cmd/rs
 ```
 
-Zero third-party dependencies; Go 1.24+.
+A single pure-Go dependency (the [alcatraz](https://github.com/hoophq/alcatraz)
+detection library). Go 1.24+.
 
 ## Usage
 
@@ -62,6 +64,7 @@ Common options:
 | `-home` | `$HOME` | Home directory to discover sessions under |
 | `-rules` | _(none)_ | Guardrails rules JSON file |
 | `-min-score` | `0.4` | Minimum detection confidence (0–1) to count |
+| `-engine` | `alcatraz` | Detection engine: `alcatraz` (full PII set) or `stub` (zero-dependency fallback) |
 | `-incremental` | `false` | Only scan content appended since the last run |
 | `-state` | `~/.risk-analyzer/state.json` | Incremental scan state file |
 | `-quiet` | `false` | Suppress the terminal summary |
@@ -73,19 +76,22 @@ content (useful for "what changed since last time").
 
 ## What it detects
 
-Structured PII and the secret types that matter most for coding sessions:
+Structured PII (via the alcatraz engine) plus the secret types that matter most
+for coding sessions (via rs's own secrets pack):
 
 - **Secrets**: API keys (GitHub, OpenAI, Google, Slack, Stripe, JWT, and a
   generic high-entropy `key = value` heuristic), AWS access keys, private keys,
   passwords.
 - **Financial**: credit cards (Luhn-checked), IBAN (mod-97-checked), crypto
-  addresses.
-- **Identifiers**: US SSN (range-validated), email, phone, IP address, URL.
+  addresses, ABA routing numbers.
+- **Government / national IDs**: US SSN, ITIN, passport, driver license; UK NINO;
+  plus national identifiers for AU, IN, IT, ES, SG, PL, KR, FI and TH.
+- **Health**: medical license; UK NHS and AU Medicare numbers.
+- **Contact / network**: email, phone, IP address, URL.
 
-Detection is **pattern + validator** based. True checksums (Luhn, IBAN) promote
-a match to full confidence; format-only checks (SSN range rules) merely gate the
-match at its pattern score, so weak signals (e.g. a bare 9-digit number) fall
-below the `-min-score` threshold instead of flooding the report.
+Detection is **pattern + validator** based: regexes plus checksum and format
+validators (Luhn, IBAN mod-97, SSN/national-ID range rules). Matches below the
+`-min-score` threshold (default 0.4) are dropped.
 
 > **Note on NER:** `PERSON`/`LOCATION`-style entities that require an NLP model
 > are intentionally **not** detected in this version. The analyzer is exposed
@@ -132,7 +138,7 @@ cmd/rs/        CLI: flags → discover → analyze → risk → render
 sources/       discover & parse claude/cursor/opencode sessions
 state/         incremental scan offsets
 types/         normalized Session/Message model
-analyze/       Analyzer interface + local regex/secret Stub (+ validators)
+analyze/       Analyzer interface + alcatraz engine, shared secrets pack, Stub fallback
 guardrails/    local rules loader + direction-aware matcher
 risk/          severity catalog + risk model (tiers, exposure, score)
 report/        terminal + self-contained HTML renderer (embedded CSS/JS)
