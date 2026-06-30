@@ -47,6 +47,7 @@ type options struct {
 	rules       string
 	statePath   string
 	minScore    float64
+	engine      string
 	incremental bool
 	quiet       bool
 	open        bool
@@ -65,6 +66,7 @@ func run() error {
 	flag.StringVar(&opt.rules, "rules", "", "path to a guardrails rules JSON file (optional)")
 	flag.StringVar(&opt.statePath, "state", filepath.Join(defaultHome, ".risk-analyzer", "state.json"), "incremental scan state file")
 	flag.Float64Var(&opt.minScore, "min-score", 0.4, "minimum detection confidence (0-1) for a finding to count")
+	flag.StringVar(&opt.engine, "engine", "alcatraz", "detection engine: alcatraz (default, full PII set) or stub (zero-dependency fallback)")
 	flag.BoolVar(&opt.incremental, "incremental", false, "only scan content appended since the last run (persists offsets)")
 	flag.BoolVar(&opt.quiet, "quiet", false, "do not print the terminal summary")
 	flag.BoolVar(&opt.open, "open", true, "open the HTML report in the default browser when done")
@@ -109,8 +111,10 @@ func run() error {
 	}
 	sessions = filterSessions(sessions, projectFilter, sessionFilter, opt.days)
 
-	analyzer := analyze.NewStub()
-	analyzer.SetThreshold(opt.minScore)
+	analyzer, err := buildAnalyzer(opt.engine, opt.minScore)
+	if err != nil {
+		return err
+	}
 	inputs := analyzeSessions(analyzer, engine, sessions)
 
 	rep := risk.Build(risk.Meta{
@@ -169,6 +173,25 @@ func openBrowser(path string) error {
 		cmd = exec.Command("xdg-open", abs)
 	}
 	return cmd.Start()
+}
+
+// buildAnalyzer constructs the detection engine named by -engine. alcatraz (the
+// default) pairs the alcatraz library's structured-PII recognizers with the
+// local secrets pack; stub is the zero-dependency regex fallback. Both seed
+// their confidence threshold from minScore.
+func buildAnalyzer(name string, minScore float64) (analyze.Analyzer, error) {
+	switch name {
+	case "alcatraz", "":
+		a := analyze.NewAlcatraz()
+		a.SetThreshold(minScore)
+		return a, nil
+	case "stub":
+		a := analyze.NewStub()
+		a.SetThreshold(minScore)
+		return a, nil
+	default:
+		return nil, fmt.Errorf("unknown -engine %q (want alcatraz or stub)", name)
+	}
 }
 
 func compileFilter(expr, name string) (*regexp.Regexp, error) {

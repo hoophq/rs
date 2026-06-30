@@ -1,10 +1,6 @@
 # compiled binary
 /rs
 
-# local go workspace (machine-specific relative path to ../alcatraz)
-go.work
-go.work.sum
-
 # generated reports
 risk-report.html
 risk-report.json

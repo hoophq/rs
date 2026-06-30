@@ -1,7 +1,6 @@
 package analyze
 
 import (
-	"math"
 	"regexp"
 	"sort"
 	"strconv"
@@ -11,12 +10,6 @@ import (
 const (
 	minScore = 0.0
 	maxScore = 1.0
-	// defaultThreshold is the minimum confidence a finding must reach to be
-	// reported, mirroring Presidio's decision threshold. It filters out the
-	// inherently weak signals (e.g. a bare 9-digit number that merely has a
-	// plausible SSN structure) while keeping checksum-validated and
-	// high-prefix matches.
-	defaultThreshold = 0.4
 )
 
 // pattern is a compiled regex with a confidence score. group selects which
@@ -48,8 +41,9 @@ type recognizer struct {
 }
 
 // Stub is a dependency-free regex analyzer covering structured PII and the
-// secret types that matter most for AI coding sessions. It is the interim
-// implementation of Analyzer until presidio-go lands.
+// secret types that matter most for AI coding sessions. It is the zero-import
+// fallback engine (select it with -engine stub); the default engine is alcatraz
+// (see alcatraz.go).
 type Stub struct {
 	recognizers []recognizer
 	threshold   float64
@@ -63,11 +57,12 @@ func pat(expr string, score float64, group int) pattern {
 	return pattern{re: regexp.MustCompile(expr), score: score, group: group}
 }
 
-// NewStub builds the default recognizer set.
+// NewStub builds the recognizer set: structured PII defined here, plus the
+// shared secrets pack (see secrets.go) so the stub and the alcatraz engine
+// detect the same credentials with the same scores and heuristics.
 func NewStub() *Stub {
 	cardSanitize := strings.NewReplacer("-", "", " ", "")
-	return &Stub{recognizers: []recognizer{
-		// ── Structured PII ──
+	recs := []recognizer{
 		{
 			entity:   "EMAIL_ADDRESS",
 			patterns: []pattern{pat(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`, 0.7, 0)},
@@ -110,39 +105,17 @@ func NewStub() *Stub {
 			entity:   "CRYPTO",
 			patterns: []pattern{pat(`\b(?:bc1[a-zA-HJ-NP-Z0-9]{25,39}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})\b`, 0.6, 0)},
 		},
-
-		// ── Secrets (absent from rs-presidio; the top exposure for coding sessions) ──
-		{
-			entity:   "AWS_ACCESS_KEY",
-			patterns: []pattern{pat(`\b(?:AKIA|ASIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA)[A-Z0-9]{16}\b`, 1.0, 0)},
-		},
-		{
-			entity:   "PRIVATE_KEY",
-			patterns: []pattern{pat(`-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----`, 1.0, 0)},
-		},
-		{
-			entity: "API_KEY",
-			patterns: []pattern{
-				pat(`\bgh[pousr]_[A-Za-z0-9]{36}\b`, 1.0, 0),                                        // GitHub
-				pat(`\bsk-(?:proj-)?[A-Za-z0-9_\-]{20,}\b`, 0.9, 0),                                 // OpenAI
-				pat(`\bAIza[0-9A-Za-z_\-]{35}\b`, 1.0, 0),                                           // Google
-				pat(`\bxox[baprs]-[0-9A-Za-z\-]{10,48}\b`, 1.0, 0),                                  // Slack
-				pat(`\b(?:sk|rk|pk)_(?:live|test)_[0-9A-Za-z]{16,}\b`, 1.0, 0),                      // Stripe
-				pat(`\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\b`, 0.7, 0), // JWT
-			},
-		},
-		{
-			// Heuristic: a secret-ish keyword assigned a high-entropy value.
-			entity:   "API_KEY",
-			patterns: []pattern{pat(`(?i)(?:api[_\-]?key|secret|access[_\-]?token|auth[_\-]?token|client[_\-]?secret|token)["']?\s*[:=]\s*["']?([A-Za-z0-9._/+\-]{12,})`, 0.5, 1)},
-			filter:   looksLikeSecret,
-		},
-		{
-			entity:   "PASSWORD",
-			patterns: []pattern{pat(`(?i)(?:password|passwd|pwd)["']?\s*[:=]\s*["']?([^\s"']{8,})`, 0.5, 1)},
-			filter:   looksLikePassword,
-		},
-	}, threshold: defaultThreshold}
+	}
+	// Secrets come from the shared pack so the fallback engine stays in lockstep
+	// with alcatraz on credential detection.
+	for _, sp := range secretSpecs {
+		recs = append(recs, recognizer{
+			entity:   sp.entity,
+			patterns: []pattern{pat(sp.expr, sp.score, sp.group)},
+			filter:   sp.filter,
+		})
+	}
+	return &Stub{recognizers: recs, threshold: defaultThreshold}
 }
 
 // Analyze runs every recognizer over text and returns the deduplicated findings.
@@ -195,8 +168,8 @@ func (s *Stub) Analyze(text string) ([]Finding, error) {
 	return dedupe(results), nil
 }
 
-// dedupe removes zero-score and same-entity overlapping findings, keeping the
-// higher-scoring/wider span (a port of rs-presidio's RecognizerUtils).
+// dedupe removes zero-score findings and, within the same entity type,
+// overlapping spans — keeping the higher-scoring/wider span.
 func dedupe(results []Finding) []Finding {
 	var filtered []Finding
 	for _, r := range results {
@@ -312,57 +285,4 @@ func validIBAN(s string) bool {
 		}
 	}
 	return rem == 1
-}
-
-// ── Secret heuristics ──
-
-var secretPlaceholders = []string{
-	"xxxx", "redacted", "example", "your-", "your_", "changeme",
-	"placeholder", "${", "<", "...", "****", "dummy", "sample", "test",
-}
-
-func looksLikeSecret(v string) bool {
-	if len(v) < 12 {
-		return false
-	}
-	lv := strings.ToLower(v)
-	for _, p := range secretPlaceholders {
-		if strings.Contains(lv, p) {
-			return false
-		}
-	}
-	return shannon(v) >= 2.5
-}
-
-func looksLikePassword(v string) bool {
-	if len(v) < 8 {
-		return false
-	}
-	lv := strings.ToLower(v)
-	for _, p := range secretPlaceholders {
-		if strings.Contains(lv, p) {
-			return false
-		}
-	}
-	return shannon(v) >= 2.0
-}
-
-func shannon(s string) float64 {
-	if s == "" {
-		return 0
-	}
-	freq := map[rune]float64{}
-	for _, c := range s {
-		freq[c]++
-	}
-	n := 0.0
-	for _, c := range freq {
-		n += c
-	}
-	var h float64
-	for _, c := range freq {
-		p := c / n
-		h -= p * math.Log2(p)
-	}
-	return h
 }
