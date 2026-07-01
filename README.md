@@ -20,14 +20,24 @@ available with `-engine stub`. No external DLP service, no API calls.
 
 ## Install
 
+### Homebrew
+
+```bash
+brew install hoophq/tap/rs
+```
+
+Prebuilt, no compile step. Covers macOS (arm64, x64) and Linux (x64, arm64).
+
+### npm
+
 ```bash
 npx @hoophq/rs            # run without installing
 npm i -g @hoophq/rs && rs # or install the rs command globally
 ```
 
 npm pulls a prebuilt binary for your platform through optional dependencies
-(`@hoophq/rs-<os>-<arch>`), so there is no compile step. Supported platforms:
-macOS (arm64, x64), Linux (x64, arm64), Windows (x64).
+(`@hoophq/rs-<os>-<arch>`), so there is no compile step. It covers the same
+platforms as Homebrew, plus Windows (x64).
 
 ### From source
 
@@ -80,6 +90,7 @@ Common options:
 | `-state` | `~/.risk-analyzer/state.json` | Incremental scan state file |
 | `-quiet` | `false` | Suppress the terminal summary |
 | `-open` | `true` | Open the HTML report in the default browser when done |
+| `-version` | `false` | Print the rs version and exit |
 
 By default every run is a full snapshot of all your sessions. `-incremental`
 persists per-file byte offsets so subsequent runs only read newly appended

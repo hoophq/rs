@@ -11,3 +11,6 @@ risk-report.json
 
 # prebuilt binaries injected into the npm platform packages by npm/build.mjs
 /npm/rs-*/bin/
+
+# brew archives, checksums, and rendered formula produced by homebrew/build.mjs
+/homebrew/dist/

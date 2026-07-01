@@ -51,6 +51,7 @@ type options struct {
 	incremental bool
 	quiet       bool
 	open        bool
+	showVersion bool
 }
 
 func run() error {
@@ -70,7 +71,13 @@ func run() error {
 	flag.BoolVar(&opt.incremental, "incremental", false, "only scan content appended since the last run (persists offsets)")
 	flag.BoolVar(&opt.quiet, "quiet", false, "do not print the terminal summary")
 	flag.BoolVar(&opt.open, "open", true, "open the HTML report in the default browser when done")
+	flag.BoolVar(&opt.showVersion, "version", false, "print the rs version and exit")
 	flag.Parse()
+
+	if opt.showVersion {
+		fmt.Println(version)
+		return nil
+	}
 
 	if opt.home == "" {
 		return fmt.Errorf("could not determine home directory; pass -home")
