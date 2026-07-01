@@ -1,6 +1,7 @@
-// Command rs scans local AI coding sessions (Claude Code, Cursor, OpenCode)
-// for PII and secrets entirely on the machine (no gateway, no network) and
-// renders a risk summary to the terminal and a self-contained HTML report.
+// Command hooprs scans local AI coding sessions (Claude Code, Cursor,
+// OpenCode) for PII and secrets entirely on the machine (no gateway, no
+// network) and renders a risk summary to the terminal and a self-contained
+// HTML report.
 package main
 
 import (
@@ -31,7 +32,7 @@ var version = "dev"
 
 func main() {
 	if err := run(); err != nil {
-		fmt.Fprintf(os.Stderr, "rs: %v\n", err)
+		fmt.Fprintf(os.Stderr, "hooprs: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -71,7 +72,7 @@ func run() error {
 	flag.BoolVar(&opt.incremental, "incremental", false, "only scan content appended since the last run (persists offsets)")
 	flag.BoolVar(&opt.quiet, "quiet", false, "do not print the terminal summary")
 	flag.BoolVar(&opt.open, "open", true, "open the HTML report in the default browser when done")
-	flag.BoolVar(&opt.showVersion, "version", false, "print the rs version and exit")
+	flag.BoolVar(&opt.showVersion, "version", false, "print the hooprs version and exit")
 	flag.Parse()
 
 	if opt.showVersion {
@@ -156,7 +157,7 @@ func run() error {
 	// (headless box, no $DISPLAY) must not fail an otherwise-successful scan.
 	if opt.open {
 		if err := openBrowser(opt.out); err != nil {
-			fmt.Fprintf(os.Stderr, "rs: could not open browser (report is at %s): %v\n", opt.out, err)
+			fmt.Fprintf(os.Stderr, "hooprs: could not open browser (report is at %s): %v\n", opt.out, err)
 		}
 	}
 	return nil
@@ -307,7 +308,7 @@ func analyzeSessions(analyzer analyze.Analyzer, engine *guardrails.Engine, sessi
 			direction := msg.Role.GuardrailDirection()
 			findings, err := analyzer.Analyze(msg.Text)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "rs: analyzing %s/%s: %v\n", sess.ID, msg.ID, err)
+				fmt.Fprintf(os.Stderr, "hooprs: analyzing %s/%s: %v\n", sess.ID, msg.ID, err)
 				continue
 			}
 			for _, f := range findings {

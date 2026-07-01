@@ -1,7 +1,7 @@
 {
   "name": "@hoophq/rs-darwin-x64",
   "version": "0.0.0",
-  "description": "Prebuilt rs binary for macOS x64.",
+  "description": "Prebuilt hooprs binary for macOS x64.",
   "os": [
     "darwin"
   ],
@@ -9,7 +9,7 @@
     "x64"
   ],
   "files": [
-    "bin/rs"
+    "bin/hooprs"
   ],
   "license": "MIT",
   "repository": {

@@ -1,9 +1,12 @@
 # Risk Summary for local AI coding sessions
 
-`rs` (Risk Summary) scans your local AI coding sessions (Claude Code, Cursor,
-OpenCode) for PII and secrets **on your machine** (no gateway, no
+`hooprs` (hoop Risk Summary) scans your local AI coding sessions (Claude Code,
+Cursor, OpenCode) for PII and secrets **on your machine** (no gateway, no
 network) and produces a risk summary in the terminal plus a self-contained HTML
 report you can open or share.
+
+> The command is `hooprs` rather than `rs` because macOS and the BSDs ship a
+> stock `rs(1)` utility (reshape a data array) that would otherwise be shadowed.
 
 Detection runs in-process. The default engine pairs the
 [alcatraz](https://github.com/hoophq/alcatraz) PII library with a local secrets
@@ -23,7 +26,7 @@ zero-dependency regex engine. No external DLP service, no API calls.
 ### Homebrew
 
 ```bash
-brew install hoophq/tap/rs
+brew install hoophq/tap/hooprs
 ```
 
 Prebuilt, no compile step. Covers macOS (arm64, x64) and Linux (x64, arm64).
@@ -31,8 +34,8 @@ Prebuilt, no compile step. Covers macOS (arm64, x64) and Linux (x64, arm64).
 ### npm
 
 ```bash
-npx @hoophq/rs            # run without installing
-npm i -g @hoophq/rs && rs # or install the rs command globally
+npx @hoophq/rs                # run without installing
+npm i -g @hoophq/rs && hooprs # or install the hooprs command globally
 ```
 
 npm pulls a prebuilt binary for your platform through optional dependencies
@@ -42,7 +45,7 @@ platforms as Homebrew, plus Windows (x64).
 ### From source
 
 ```bash
-go build -o rs ./cmd/rs
+go build -o hooprs ./cmd/hooprs
 ```
 
 A single pure-Go dependency (the [alcatraz](https://github.com/hoophq/alcatraz)
@@ -53,23 +56,23 @@ detection library). Go 1.24+.
 Scan everything and write `risk-report.html` in the current directory:
 
 ```bash
-./rs
+./hooprs
 ```
 
 Common options:
 
 ```bash
 # scan only the last 30 days, also emit the machine-readable JSON
-./rs -days 30 -json risk-report.json
+./hooprs -days 30 -json risk-report.json
 
 # scan only Cursor sessions whose project matches a pattern
-./rs -tools cursor -project 'my-app'
+./hooprs -tools cursor -project 'my-app'
 
 # apply local guardrail rules
-./rs -rules examples/guardrails.json
+./hooprs -rules examples/guardrails.json
 
 # only count detections at or above a confidence (default 0.4)
-./rs -min-score 0.6
+./hooprs -min-score 0.6
 ```
 
 ### Flags
@@ -90,7 +93,7 @@ Common options:
 | `-state` | `~/.risk-analyzer/state.json` | Incremental scan state file |
 | `-quiet` | `false` | Suppress the terminal summary |
 | `-open` | `true` | Open the HTML report in the default browser when done |
-| `-version` | `false` | Print the rs version and exit |
+| `-version` | `false` | Print the hooprs version and exit |
 
 By default every run is a full snapshot of all your sessions. `-incremental`
 persists per-file byte offsets so subsequent runs read only the content appended
@@ -99,7 +102,7 @@ since the last run (useful for "what changed since last time").
 ## What it detects
 
 Structured PII (via the alcatraz engine) plus the secret types common in coding
-sessions (via rs's own secrets pack):
+sessions (via hooprs's own secrets pack):
 
 - **Secrets**: API keys (GitHub, OpenAI, Google, Slack, Stripe, JWT, and a
   generic high-entropy `key = value` heuristic), AWS access keys, private keys,
@@ -112,7 +115,7 @@ sessions (via rs's own secrets pack):
 - **Contact / network**: email, phone, IP address, URL.
 
 Detection pairs regex **patterns** with checksum and format **validators**
-(Luhn, IBAN mod-97, SSN/national-ID range rules). `rs` drops matches below the
+(Luhn, IBAN mod-97, SSN/national-ID range rules). `hooprs` drops matches below the
 `-min-score` threshold (default 0.4).
 
 > **Note on NER:** `PERSON`/`LOCATION`-style entities that need an NLP model stay
@@ -155,7 +158,7 @@ Nothing leaves your machine.
 ## Layout
 
 ```
-cmd/rs/        CLI: flags → discover → analyze → risk → render
+cmd/hooprs/    CLI: flags → discover → analyze → risk → render
 sources/       discover & parse claude/cursor/opencode sessions
 state/         incremental scan offsets
 types/         normalized Session/Message model

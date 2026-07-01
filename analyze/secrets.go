@@ -22,7 +22,7 @@ type secretSpec struct {
 
 // secretSpecs is the secrets pack: the credential types common in AI coding
 // sessions. alcatraz detects none of these (it covers structured PII only), so
-// rs supplies them on top of whichever engine is selected.
+// hooprs supplies them on top of whichever engine is selected.
 var secretSpecs = []secretSpec{
 	{"aws-access-key", "AWS_ACCESS_KEY", `\b(?:AKIA|ASIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA)[A-Z0-9]{16}\b`, 1.0, 0, nil},
 	{"private-key", "PRIVATE_KEY", `-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----`, 1.0, 0, nil},

@@ -130,7 +130,7 @@ jobs:
             exit 1
           fi
           # Creating the release also creates the vNEXT tag at $SHA. That tag is
-          # the published artifact: `go install github.com/hoophq/rs/cmd/rs@NEXT`.
+          # the published artifact: `go install github.com/hoophq/rs/cmd/hooprs@NEXT`.
           ARGS=(--title "$NEXT" --target "$SHA" --generate-notes)
           if [ "$PREVIOUS" != "v0.0.0" ]; then
             ARGS+=(--notes-start-tag "$PREVIOUS")

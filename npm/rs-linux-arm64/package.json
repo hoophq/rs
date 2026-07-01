@@ -1,7 +1,7 @@
 {
   "name": "@hoophq/rs-linux-arm64",
   "version": "0.0.0",
-  "description": "Prebuilt rs binary for Linux arm64.",
+  "description": "Prebuilt hooprs binary for Linux arm64.",
   "os": [
     "linux"
   ],
@@ -9,7 +9,7 @@
     "arm64"
   ],
   "files": [
-    "bin/rs"
+    "bin/hooprs"
   ],
   "license": "MIT",
   "repository": {

@@ -1,5 +1,6 @@
 # compiled binary
 /rs
+/hooprs
 
 # generated reports
 risk-report.html

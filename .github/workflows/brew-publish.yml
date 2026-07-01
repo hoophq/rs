@@ -93,16 +93,16 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p tap/Formula
-          cp homebrew/dist/rs.rb tap/Formula/rs.rb
+          cp homebrew/dist/hooprs.rb tap/Formula/hooprs.rb
           cd tap
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/rs.rb
+          git add Formula/hooprs.rb
           # A re-run produces identical archives and checksums, so there may be
           # nothing to commit.
           if git diff --cached --quiet; then
             echo "Formula already up to date for v${VERSION}; nothing to push."
           else
-            git commit -m "rs ${VERSION}"
+            git commit -m "hooprs ${VERSION}"
             git push
           fi

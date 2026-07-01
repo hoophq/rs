@@ -1,7 +1,7 @@
 {
   "name": "@hoophq/rs-linux-x64",
   "version": "0.0.0",
-  "description": "Prebuilt rs binary for Linux x64.",
+  "description": "Prebuilt hooprs binary for Linux x64.",
   "os": [
     "linux"
   ],
@@ -9,7 +9,7 @@
     "x64"
   ],
   "files": [
-    "bin/rs"
+    "bin/hooprs"
   ],
   "license": "MIT",
   "repository": {

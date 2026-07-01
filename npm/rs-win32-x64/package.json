@@ -1,7 +1,7 @@
 {
   "name": "@hoophq/rs-win32-x64",
   "version": "0.0.0",
-  "description": "Prebuilt rs binary for Windows x64.",
+  "description": "Prebuilt hooprs binary for Windows x64.",
   "os": [
     "win32"
   ],
@@ -9,7 +9,7 @@
     "x64"
   ],
   "files": [
-    "bin/rs.exe"
+    "bin/hooprs.exe"
   ],
   "license": "MIT",
   "repository": {

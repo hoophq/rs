@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Stamp a release version across all npm packages and cross-compile the rs
+// Stamp a release version across all npm packages and cross-compile the hooprs
 // binary for every supported platform into each package's bin/ directory.
 // This is the single source of truth for the platform matrix.
 //
@@ -21,12 +21,13 @@ if (!version || !/^\d+\.\d+\.\d+$/.test(version)) {
 
 // node platform/arch <-> Go GOOS/GOARCH. The package dir/name uses node's
 // naming so the launcher can resolve `@hoophq/rs-${process.platform}-${process.arch}`.
+// The binary is named hooprs (not rs) to avoid colliding with BSD rs(1) on macOS.
 const PLATFORMS = [
-  { pkg: "rs-darwin-arm64", goos: "darwin", goarch: "arm64", bin: "rs" },
-  { pkg: "rs-darwin-x64", goos: "darwin", goarch: "amd64", bin: "rs" },
-  { pkg: "rs-linux-x64", goos: "linux", goarch: "amd64", bin: "rs" },
-  { pkg: "rs-linux-arm64", goos: "linux", goarch: "arm64", bin: "rs" },
-  { pkg: "rs-win32-x64", goos: "windows", goarch: "amd64", bin: "rs.exe" },
+  { pkg: "rs-darwin-arm64", goos: "darwin", goarch: "arm64", bin: "hooprs" },
+  { pkg: "rs-darwin-x64", goos: "darwin", goarch: "amd64", bin: "hooprs" },
+  { pkg: "rs-linux-x64", goos: "linux", goarch: "amd64", bin: "hooprs" },
+  { pkg: "rs-linux-arm64", goos: "linux", goarch: "arm64", bin: "hooprs" },
+  { pkg: "rs-win32-x64", goos: "windows", goarch: "amd64", bin: "hooprs.exe" },
 ];
 
 const readJSON = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -57,7 +58,7 @@ for (const plat of PLATFORMS) {
   mkdirSync(outDir, { recursive: true });
   const out = join(outDir, plat.bin);
   console.log(`building ${plat.goos}/${plat.goarch} -> ${out}`);
-  execFileSync("go", ["build", "-trimpath", "-ldflags", ldflags, "-o", out, "./cmd/rs"], {
+  execFileSync("go", ["build", "-trimpath", "-ldflags", ldflags, "-o", out, "./cmd/hooprs"], {
     cwd: repoRoot,
     stdio: "inherit",
     env: { ...process.env, GOOS: plat.goos, GOARCH: plat.goarch, CGO_ENABLED: "0" },

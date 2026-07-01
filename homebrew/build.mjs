@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-// Cross-compile rs for the platforms Homebrew supports, package each build as a
-// tar.gz, and render the tap formula (rs.rb) with the archive checksums. This is
-// the single source of truth for the brew platform matrix and formula content.
+// Cross-compile hooprs for the platforms Homebrew supports, package each build
+// as a tar.gz, and render the tap formula (hooprs.rb) with the archive
+// checksums. This is the single source of truth for the brew platform matrix
+// and formula content. The command is hooprs (not rs) to avoid colliding with
+// BSD rs(1), which ships with macOS.
 //
 //   node homebrew/build.mjs 1.2.3
 //
 // Everything lands in homebrew/dist/:
-//   rs_<version>_<os>_<arch>.tar.gz   uploaded to the GitHub release
-//   rs.rb                             copied into the hoophq/homebrew-tap repo
+//   hooprs_<version>_<os>_<arch>.tar.gz   uploaded to the GitHub release
+//   hooprs.rb                             copied into the hoophq/homebrew-tap repo
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -36,7 +38,7 @@ const PLATFORMS = [
 
 const repo = "hoophq/rs";
 const tag = `v${version}`;
-// Match npm/build.mjs so `rs -version` reports the same v-prefixed string.
+// Match npm/build.mjs so `hooprs -version` reports the same v-prefixed string.
 const ldflags = `-s -w -X main.version=${tag}`;
 
 rmSync(distDir, { recursive: true, force: true });
@@ -46,18 +48,18 @@ const sha = {};
 for (const p of PLATFORMS) {
   const buildDir = join(distDir, `${p.os}_${p.arch}`);
   mkdirSync(buildDir, { recursive: true });
-  const binPath = join(buildDir, "rs");
+  const binPath = join(buildDir, "hooprs");
   console.log(`building ${p.goos}/${p.goarch}`);
-  execFileSync("go", ["build", "-trimpath", "-ldflags", ldflags, "-o", binPath, "./cmd/rs"], {
+  execFileSync("go", ["build", "-trimpath", "-ldflags", ldflags, "-o", binPath, "./cmd/hooprs"], {
     cwd: repoRoot,
     stdio: "inherit",
     env: { ...process.env, GOOS: p.goos, GOARCH: p.goarch, CGO_ENABLED: "0" },
   });
 
-  const archive = `rs_${version}_${p.os}_${p.arch}.tar.gz`;
+  const archive = `hooprs_${version}_${p.os}_${p.arch}.tar.gz`;
   const archivePath = join(distDir, archive);
-  // -C keeps the binary at the archive root so the formula does bin.install "rs".
-  execFileSync("tar", ["-czf", archivePath, "-C", buildDir, "rs"], { stdio: "inherit" });
+  // -C keeps the binary at the archive root so the formula does bin.install "hooprs".
+  execFileSync("tar", ["-czf", archivePath, "-C", buildDir, "hooprs"], { stdio: "inherit" });
   rmSync(buildDir, { recursive: true, force: true });
 
   sha[p.key] = createHash("sha256").update(readFileSync(archivePath)).digest("hex");
@@ -65,10 +67,10 @@ for (const p of PLATFORMS) {
 }
 
 const url = (p) =>
-  `https://github.com/${repo}/releases/download/${tag}/rs_${version}_${p.os}_${p.arch}.tar.gz`;
+  `https://github.com/${repo}/releases/download/${tag}/hooprs_${version}_${p.os}_${p.arch}.tar.gz`;
 const [macosArm, macosIntel, linuxArm, linuxIntel] = PLATFORMS;
 
-const formula = `class Rs < Formula
+const formula = `class Hooprs < Formula
   desc "Local PII and secrets risk scanner for AI coding sessions"
   homepage "https://github.com/${repo}"
   version "${version}"
@@ -97,14 +99,14 @@ const formula = `class Rs < Formula
   end
 
   def install
-    bin.install "rs"
+    bin.install "hooprs"
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/rs -version")
+    assert_match version.to_s, shell_output("#{bin}/hooprs -version")
   end
 end
 `;
 
-writeFileSync(join(distDir, "rs.rb"), formula);
-console.log(`\nwrote ${join(distDir, "rs.rb")} for ${PLATFORMS.length} platforms`);
+writeFileSync(join(distDir, "hooprs.rb"), formula);
+console.log(`\nwrote ${join(distDir, "hooprs.rb")} for ${PLATFORMS.length} platforms`);

@@ -12,7 +12,7 @@ import (
 
 // State maps file paths to the byte offset already consumed. JSONL session
 // files (Claude, Cursor) are append-only, so an offset describes the processed
-// prefix. OpenCode part files are immutable once written, so rs marks them
+// prefix. OpenCode part files are immutable once written, so hooprs marks them
 // consumed at their full size.
 type State struct {
 	path  string

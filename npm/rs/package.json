@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "description": "Local PII and secrets risk scanner for AI coding sessions (Claude Code, Cursor, OpenCode). No gateway, no network.",
   "bin": {
-    "rs": "bin/rs.js"
+    "hooprs": "bin/hooprs.js"
   },
   "files": [
-    "bin/rs.js"
+    "bin/hooprs.js"
   ],
   "optionalDependencies": {
     "@hoophq/rs-darwin-arm64": "0.0.0",
