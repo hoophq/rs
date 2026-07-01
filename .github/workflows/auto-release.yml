@@ -36,12 +36,30 @@ jobs:
 
           # Ask GitHub which PR this pushed commit belongs to, rather than
           # parsing the commit subject. This is merge-strategy agnostic (works
-          # for squash, merge-commit and rebase) and returns empty for a direct
-          # push to main, which we treat as "nothing to release".
-          PR_NUMBER=$(gh api "repos/${REPO}/commits/${SHA}/pulls" --jq '.[0].number // ""')
+          # for squash, merge-commit and rebase).
+          #
+          # GitHub links a commit to its PR asynchronously, so a push-triggered
+          # run often queries before the just-merged commit is associated
+          # (seen on back-to-back merges, where the link lands a few seconds
+          # after the push). A single lookup then misreads a real merge as a
+          # direct push and silently drops the release, so poll until the link
+          # appears before giving up.
+          PR_NUMBER=""
+          attempts=8
+          for attempt in $(seq 1 "$attempts"); do
+            # gh exits non-zero only on a real API error, which should fail the
+            # run. A valid "not linked yet" reply is an empty array, which
+            # becomes an empty string here and drives another poll.
+            PR_NUMBER=$(gh api "repos/${REPO}/commits/${SHA}/pulls" --jq '.[0].number // ""')
+            [ -n "$PR_NUMBER" ] && break
+            if [ "$attempt" -lt "$attempts" ]; then
+              echo "No PR linked to ${SHA} yet (attempt ${attempt}/${attempts}); waiting 10s for GitHub to index it..."
+              sleep 10
+            fi
+          done
 
           if [ -z "$PR_NUMBER" ]; then
-            echo "No PR is associated with ${SHA} (direct push to main?). Nothing to release."
+            echo "No PR is associated with ${SHA} after polling (direct push to main?). Nothing to release."
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
