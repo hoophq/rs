@@ -5,7 +5,7 @@
 # generated reports
 risk-report.html
 risk-report.json
-*.png
+#*.png
 
 # local incremental scan state
 .risk-analyzer/

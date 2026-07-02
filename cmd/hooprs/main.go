@@ -48,6 +48,7 @@ type options struct {
 	rules       string
 	statePath   string
 	minScore    float64
+	critWeight  float64
 	engine      string
 	incremental bool
 	quiet       bool
@@ -69,6 +70,7 @@ func run() error {
 	flag.StringVar(&opt.rules, "rules", "", "path to a guardrails rules JSON file (optional)")
 	flag.StringVar(&opt.statePath, "state", filepath.Join(defaultHome, ".risk-analyzer", "state.json"), "incremental scan state file")
 	flag.Float64Var(&opt.minScore, "min-score", 0.4, "minimum detection confidence (0-1) for a finding to count")
+	flag.Float64Var(&opt.critWeight, "critical-weight", risk.DefaultCriticalWeight, "security-score penalty weight (0-100) for the critical-session share")
 	flag.StringVar(&opt.engine, "engine", "alcatraz", "detection engine: alcatraz (default, full PII set) or stub (zero-dependency fallback)")
 	flag.BoolVar(&opt.incremental, "incremental", false, "only scan content appended since the last run (persists offsets)")
 	flag.BoolVar(&opt.quiet, "quiet", false, "do not print the terminal summary")
@@ -84,6 +86,9 @@ func run() error {
 
 	if opt.home == "" {
 		return fmt.Errorf("could not determine home directory; pass -home")
+	}
+	if opt.critWeight <= 0 || opt.critWeight > 100 {
+		return fmt.Errorf("-critical-weight must be greater than 0 and at most 100, got %v", opt.critWeight)
 	}
 
 	projectFilter, err := compileFilter(opt.project, "project")
@@ -128,9 +133,10 @@ func run() error {
 	inputs := analyzeSessions(analyzer, engine, sessions, opt.showValues)
 
 	rep := risk.Build(risk.Meta{
-		GeneratedAt: time.Now(),
-		Sources:     sourceLabels,
-		WindowDays:  opt.days,
+		GeneratedAt:    time.Now(),
+		Sources:        sourceLabels,
+		WindowDays:     opt.days,
+		CriticalWeight: opt.critWeight,
 	}, inputs)
 
 	if err := writeHTML(opt.out, rep); err != nil {

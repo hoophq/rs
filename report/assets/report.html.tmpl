@@ -24,7 +24,11 @@
       <div class="rr-window-bar">
         <div class="rr-dots"><span class="rr-dot"></span><span class="rr-dot"></span><span class="rr-dot"></span></div>
         <span class="rr-window-name">risk-report.html</span>
-        <span class="rr-window-meta">generated locally · {{.GeneratedLabel}}</span>
+        <div class="rr-bar-right">
+          <span class="rr-window-meta">generated locally · {{.GeneratedLabel}}</span>
+          <button type="button" class="rr-action" id="rr-share">Share</button>
+          <button type="button" class="rr-action rr-action-ghost" id="rr-pdf">Save PDF</button>
+        </div>
       </div>
 
       <div class="rr-body">
@@ -158,6 +162,22 @@
       <span class="rr-cta-btn">View on GitHub →</span>
     </a>
   </div>
+
+  <div class="rr-sharecard-host" aria-hidden="true">{{template "sharecard" .}}</div>
+  <textarea id="rr-slacktext" class="rr-sr-only" readonly>{{.SlackText}}</textarea>
+
+  <div class="rr-toast" id="rr-toast" role="status" aria-live="polite">
+    <div class="rr-toast-head">
+      <span class="rr-toast-title" id="rr-toast-title">Image copied to clipboard</span>
+      <button type="button" class="rr-toast-close" id="rr-toast-close" aria-label="Dismiss">×</button>
+    </div>
+    <p class="rr-toast-note" id="rr-toast-note">Paste it into Slack, then send the message below.</p>
+    <pre class="rr-toast-text" id="rr-toast-preview"></pre>
+    <div class="rr-toast-actions">
+      <button type="button" class="rr-toast-btn" id="rr-copy-text">Copy message</button>
+      <button type="button" class="rr-toast-btn rr-toast-btn-ghost" id="rr-download">Download PNG</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -209,6 +229,119 @@
   }
   document.querySelectorAll(".rr-filter").forEach(function (el) {
     el.addEventListener("click", function () { setSev(el.getAttribute("data-sev")); });
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var CARD_W = 1200, CARD_H = 630;
+  var toast = document.getElementById("rr-toast");
+  var lastBlob = null;
+
+  // Rasterize the inline share-card SVG to a PNG blob entirely on the client.
+  // The card is pure vector + text with no external resources, so the canvas is
+  // never tainted and toBlob succeeds. scale > 1 yields a crisp retina image.
+  function rasterize(scale) {
+    return new Promise(function (resolve, reject) {
+      var svg = document.getElementById("rr-sharecard");
+      if (!svg) { reject(new Error("share card missing")); return; }
+      var xml = new XMLSerializer().serializeToString(svg);
+      var img = new Image();
+      img.onload = function () {
+        var canvas = document.createElement("canvas");
+        canvas.width = CARD_W * scale;
+        canvas.height = CARD_H * scale;
+        var ctx = canvas.getContext("2d");
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+        ctx.drawImage(img, 0, 0, CARD_W, CARD_H);
+        canvas.toBlob(function (blob) {
+          blob ? resolve(blob) : reject(new Error("rasterization failed"));
+        }, "image/png");
+      };
+      img.onerror = function () { reject(new Error("could not load share card")); };
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
+    });
+  }
+
+  function download(blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "hooprs-report.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  function showToast(copied) {
+    if (!toast) return;
+    var text = document.getElementById("rr-slacktext");
+    var preview = document.getElementById("rr-toast-preview");
+    if (preview && text) preview.textContent = text.value;
+    var title = document.getElementById("rr-toast-title");
+    var note = document.getElementById("rr-toast-note");
+    if (copied) {
+      title.textContent = "Image copied to clipboard";
+      note.textContent = "Paste it into Slack, then send the message below.";
+    } else {
+      title.textContent = "Download the image";
+      note.textContent = "Your browser blocked clipboard access — download the PNG, then share the message below.";
+    }
+    toast.classList.add("rr-toast-show");
+  }
+
+  var shareBtn = document.getElementById("rr-share");
+  if (shareBtn) shareBtn.addEventListener("click", function () {
+    shareBtn.disabled = true;
+    rasterize(2).then(function (blob) {
+      lastBlob = blob;
+      if (navigator.clipboard && window.ClipboardItem) {
+        return navigator.clipboard.write([new ClipboardItem({ "image/png": blob })])
+          .then(function () { showToast(true); }, function () { showToast(false); });
+      }
+      showToast(false);
+    }).catch(function () {
+      if (lastBlob) download(lastBlob);
+      else window.print();
+    }).then(function () { shareBtn.disabled = false; });
+  });
+
+  var pdfBtn = document.getElementById("rr-pdf");
+  if (pdfBtn) pdfBtn.addEventListener("click", function () { window.print(); });
+
+  var copyText = document.getElementById("rr-copy-text");
+  if (copyText) copyText.addEventListener("click", function () {
+    var text = document.getElementById("rr-slacktext");
+    if (!text) return;
+    var done = function () {
+      copyText.textContent = "Copied";
+      setTimeout(function () { copyText.textContent = "Copy message"; }, 1600);
+    };
+    var legacy = function () {
+      text.classList.remove("rr-sr-only");
+      text.focus();
+      text.select();
+      try { document.execCommand("copy"); done(); } catch (e) {}
+      text.classList.add("rr-sr-only");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text.value).then(done, legacy);
+    } else {
+      legacy();
+    }
+  });
+
+  var dlBtn = document.getElementById("rr-download");
+  if (dlBtn) dlBtn.addEventListener("click", function () {
+    if (lastBlob) { download(lastBlob); return; }
+    rasterize(2).then(download).catch(function () {});
+  });
+
+  var closeBtn = document.getElementById("rr-toast-close");
+  if (closeBtn) closeBtn.addEventListener("click", function () {
+    if (toast) toast.classList.remove("rr-toast-show");
   });
 })();
 </script>

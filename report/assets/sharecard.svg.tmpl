@@ -1,0 +1,40 @@
+{{define "sharecard"}}<svg id="rr-sharecard" xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <rect width="1200" height="630" fill="#0c0c0c"/>
+  <rect x="0" y="0" width="1200" height="5" fill="{{.CardAccent}}"/>
+  <rect x="0.5" y="0.5" width="1199" height="629" fill="none" stroke="rgba(247,247,247,0.10)"/>
+
+  <svg x="72" y="58" width="40" height="40" viewBox="0 0 148 148">
+    <path d="M96.4167 71.4077C99.0238 71.5517 101.631 71.7389 104.238 71.9118L106.6 72.0558C114.055 73.1865 121.677 71.9359 128.38 68.4821C135.083 65.0282 140.525 59.5473 143.931 52.82C147.337 46.0928 148.533 38.4622 147.349 31.0153C146.166 23.5685 142.662 16.685 137.338 11.3455C132.014 6.00604 125.14 2.48279 117.697 1.27765C110.254 0.0725119 102.62 1.24695 95.8826 4.63367C89.1456 8.02038 83.6491 13.4467 80.176 20.1396C76.7029 26.8325 75.4304 34.4507 76.5397 41.909C76.5397 42.73 76.6405 43.551 76.6982 44.372C76.871 46.9791 77.0582 49.6005 77.1879 52.2076C77.5862 56.2358 77.0945 60.3023 75.7475 64.1194C74.7082 66.7342 73.1556 69.1144 71.1816 71.1196C69.1658 73.1255 66.7584 74.6945 64.1094 75.7287C60.2922 77.0757 56.2257 77.5675 52.1976 77.1691C49.5905 77.0395 46.9691 76.8522 44.362 76.6794L41.899 76.5209C34.4419 75.414 26.8257 76.688 20.1348 80.1613C13.4439 83.6347 8.01933 89.1305 4.63351 95.8662C1.24769 102.602 0.0732001 110.234 1.27728 117.676C2.48136 125.118 6.00262 131.99 11.3397 137.315C16.6768 142.639 23.5576 146.144 31.0024 147.33C38.4472 148.516 46.0766 147.324 52.8041 143.922C59.5317 140.52 65.0144 135.082 68.4718 128.383C71.9292 121.684 73.1849 114.065 72.0602 106.61C72.0602 105.818 71.9738 105.04 71.9162 104.248C71.7433 101.641 71.5561 99.0338 71.412 96.4268C71.0353 92.3933 71.5517 88.3263 72.9244 84.515C73.9445 81.8936 75.4939 79.5106 77.476 77.5148C79.4819 75.5453 81.8621 73.9976 84.4761 72.9633C88.2932 71.5717 92.3705 71.0405 96.4167 71.4077Z" fill="#F7F7F7"/>
+    <path d="M36.7283 63.0103C51.238 63.0103 63.0005 51.2478 63.0005 36.7381C63.0005 22.2283 51.238 10.4658 36.7283 10.4658C22.2185 10.4658 10.4561 22.2283 10.4561 36.7381C10.4561 51.2478 22.2185 63.0103 36.7283 63.0103Z" fill="#F7F7F7"/>
+    <path d="M111.944 138.226C126.454 138.226 138.216 126.464 138.216 111.954C138.216 97.4441 126.454 85.6816 111.944 85.6816C97.4344 85.6816 85.6719 97.4441 85.6719 111.954C85.6719 126.464 97.4344 138.226 111.944 138.226Z" fill="#F7F7F7"/>
+  </svg>
+  <text x="126" y="86" font-size="26" font-weight="700" fill="#F7F7F7">hoop.dev</text>
+  <text x="1128" y="84" text-anchor="end" font-size="15" font-weight="600" fill="rgba(247,247,247,0.45)" font-family="'JetBrains Mono', ui-monospace, monospace">hooprs {{.Version}}</text>
+
+  <text x="72" y="172" font-size="14" font-weight="600" letter-spacing="3" fill="rgba(247,247,247,0.45)">AI CODING SESSION SECURITY</text>
+  <text x="70" y="232" font-size="50" font-weight="800" fill="#F7F7F7">Risk Analysis Report</text>
+
+  <text x="72" y="392"><tspan font-size="128" font-weight="800" fill="#F7F7F7">{{.Score}}</tspan><tspan dx="8" font-size="42" font-weight="500" fill="rgba(247,247,247,0.4)">/100</tspan></text>
+  <text x="76" y="432" font-size="15" font-weight="600" letter-spacing="2" fill="rgba(247,247,247,0.55)">SECURITY SCORE</text>
+
+  <text x="74" y="500" font-size="13" font-weight="600" letter-spacing="1" fill="rgba(247,247,247,0.4)">CRITICAL SESSIONS</text>
+  <text x="72" y="540" font-size="33" font-weight="700" fill="#F7F7F7">{{.KpiCritical}}</text>
+  <text x="332" y="500" font-size="13" font-weight="600" letter-spacing="1" fill="rgba(247,247,247,0.4)">TOTAL FINDINGS</text>
+  <text x="330" y="540" font-size="33" font-weight="700" fill="#F7F7F7">{{.KpiFindings}}</text>
+  <text x="590" y="500" font-size="13" font-weight="600" letter-spacing="1" fill="rgba(247,247,247,0.4)">HIGH SEVERITY</text>
+  <text x="588" y="540" font-size="33" font-weight="700" fill="#F7F7F7">{{.CardHigh}}</text>
+
+  <svg x="800" y="112" width="300" height="300" viewBox="0 0 200 200">
+    <g transform="rotate(-90 100 100)">
+      <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(247,247,247,0.06)" stroke-width="22"></circle>
+      {{range .Donut}}<circle cx="100" cy="100" r="80" fill="none" stroke="{{.Color}}" stroke-width="22" stroke-dasharray="{{.Dash}}" stroke-dashoffset="{{.Offset}}" stroke-linecap="butt"></circle>{{end}}
+    </g>
+    <text x="100" y="98" text-anchor="middle" font-size="{{.CardSessionsFont}}" font-weight="800" fill="#F7F7F7">{{.SessionsLabel}}</text>
+    <text x="100" y="122" text-anchor="middle" font-size="13" fill="rgba(247,247,247,0.4)">sessions</text>
+  </svg>
+  <text x="950" y="446" text-anchor="middle" font-size="14" fill="rgba(247,247,247,0.4)">sessions by risk tier</text>
+
+  <rect x="72" y="566" width="352" height="42" rx="8" fill="rgba(247,247,247,0.06)" stroke="rgba(247,247,247,0.12)"/>
+  <text x="92" y="593" font-size="17" font-family="'JetBrains Mono', ui-monospace, monospace" fill="rgba(247,247,247,0.85)">brew install hoophq/tap/hooprs</text>
+  <text x="1128" y="593" text-anchor="end" font-size="14" fill="rgba(247,247,247,0.42)">Scanned locally · value-free report</text>
+</svg>{{end}}

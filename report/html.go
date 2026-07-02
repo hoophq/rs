@@ -15,7 +15,7 @@ import (
 	"github.com/hoophq/rs/risk"
 )
 
-//go:embed assets/report.css assets/report.html.tmpl
+//go:embed assets/report.css assets/report.html.tmpl assets/sharecard.svg.tmpl
 var assets embed.FS
 
 // circleC is the circumference of the donut ring (r=80), matching the prototype.
@@ -73,6 +73,13 @@ type htmlView struct {
 	Filters        []filterView
 	PII            []piiView
 	Sessions       []sessView
+
+	// Share card + Slack message. These carry only counts and entity types —
+	// never matched values — so sharing the report never re-leaks a leak.
+	CardAccent       string
+	CardHigh         string
+	CardSessionsFont int
+	SlackText        string
 }
 
 // HTML renders the report as a standalone HTML document.
@@ -85,8 +92,17 @@ func HTML(w io.Writer, rep risk.Report, version string) error {
 	if err != nil {
 		return err
 	}
+	cardBytes, err := assets.ReadFile("assets/sharecard.svg.tmpl")
+	if err != nil {
+		return err
+	}
 	tmpl, err := template.New("report").Parse(string(tmplBytes))
 	if err != nil {
+		return err
+	}
+	// The share card is a named sub-template ({{define "sharecard"}}) parsed into
+	// the same set so the page can inline it as a hidden, rasterizable SVG.
+	if _, err := tmpl.Parse(string(cardBytes)); err != nil {
 		return err
 	}
 	return tmpl.Execute(w, buildView(rep, version, template.CSS(cssBytes)))
@@ -190,7 +206,59 @@ func buildView(rep risk.Report, version string, css template.CSS) htmlView {
 		Filters:        filters,
 		PII:            pii,
 		Sessions:       sessions,
+
+		CardAccent:       scoreColor(rep.SecurityScore),
+		CardHigh:         comma(rep.Totals.HighFindings),
+		CardSessionsFont: cardSessionsFont(comma(int64(rep.Totals.Sessions))),
+		SlackText:        slackText(rep),
 	}
+}
+
+// scoreColor maps the security score to the share card's accent bar, mirroring
+// the tier palette: green when healthy, amber mid, red when exposed.
+func scoreColor(score int) string {
+	switch {
+	case score >= 80:
+		return tierColors["low"]
+	case score >= 50:
+		return tierColors["minor"]
+	default:
+		return tierColors["critical"]
+	}
+}
+
+// cardSessionsFont steps the donut count font down as the formatted total grows,
+// so large session counts stay inside the share card's 160px ring.
+func cardSessionsFont(label string) int {
+	switch n := len(label); {
+	case n <= 3:
+		return 52
+	case n <= 5:
+		return 40
+	case n <= 7:
+		return 30
+	case n <= 9:
+		return 24
+	default:
+		return 20
+	}
+}
+
+// slackText is the ready-to-paste message that accompanies the shared image. It
+// reports only aggregate counts and the install one-liner — no session ids, no
+// matched values — so it is safe to paste anywhere the report itself is safe.
+func slackText(rep risk.Report) string {
+	return fmt.Sprintf(
+		"🔍 hooprs scan — Security Score %d/100\n"+
+			"%s sessions · %s critical · %s findings (%s high severity)\n"+
+			"Scanned locally. The report is value-free: entity types and counts only, never the matched values.\n"+
+			"Run it yourself: brew install hoophq/tap/hooprs",
+		rep.SecurityScore,
+		comma(int64(rep.Totals.Sessions)),
+		comma(int64(rep.Totals.CriticalSessions)),
+		comma(rep.Totals.Findings),
+		comma(rep.Totals.HighFindings),
+	)
 }
 
 // donutSizeClass steps the donut count font down as the formatted total grows,
