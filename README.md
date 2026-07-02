@@ -120,6 +120,7 @@ hooprs -show-values
 | `-home` | `$HOME` | Home directory to discover sessions under |
 | `-rules` | _(none)_ | Guardrails rules JSON file |
 | `-min-score` | `0.4` | Minimum detection confidence (0 to 1) to count |
+| `-critical-weight` | `60` | Security-score penalty weight (0 to 100) for the critical-session share |
 | `-engine` | `alcatraz` | Detection engine: `alcatraz` (full PII set) or `stub` (zero-dependency fallback) |
 | `-incremental` | `false` | Only scan content appended since the last run |
 | `-state` | `~/.risk-analyzer/state.json` | Incremental scan state file |
@@ -182,7 +183,8 @@ The risk model:
   (medium-severity only), or `low`.
 - **Exposure** ranks sessions by a severity-weighted finding count that favors
   output (data pulled into the agent context) over input.
-- **Security Score** = `clamp(0, 100, round(100 − 60·critical/total − 20·minor/total))`.
+- **Security Score** = `clamp(0, 100, round(100 − W·critical/total − 20·minor/total))`,
+  where `W` is the critical penalty weight (`-critical-weight`, default 60).
 
 Severity and data-family per entity type live in
 [`risk/entities.go`](risk/entities.go).

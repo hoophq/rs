@@ -47,11 +47,18 @@ type FindingDetail struct {
 	Value  string
 }
 
+// DefaultCriticalWeight is the security-score penalty weight applied to the
+// critical-session share when Meta.CriticalWeight is unset.
+const DefaultCriticalWeight = 60
+
 // Meta is the run-level context shown in the report header.
 type Meta struct {
 	GeneratedAt time.Time
 	Sources     []string
 	WindowDays  int
+	// CriticalWeight is the score penalty weight for critical sessions.
+	// Zero means DefaultCriticalWeight.
+	CriticalWeight float64
 }
 
 // Tier is one risk bucket with its session count and share.
@@ -223,7 +230,7 @@ func Build(meta Meta, sessions []SessionInput) Report {
 		GeneratedAt:   meta.GeneratedAt,
 		Sources:       meta.Sources,
 		WindowDays:    meta.WindowDays,
-		SecurityScore: securityScore(total, tierCount["critical"], tierCount["minor"]),
+		SecurityScore: securityScore(total, tierCount["critical"], tierCount["minor"], meta.CriticalWeight),
 		Totals: Totals{
 			Sessions:         total,
 			Messages:         totalMessages,
@@ -277,12 +284,16 @@ func directedExposure(summary map[string]int64, weight float64) float64 {
 	return score
 }
 
-// securityScore is a tier-weighted penalty out of 100.
-func securityScore(total, critical, minor int) int {
+// securityScore is a tier-weighted penalty out of 100. criticalWeight is the
+// penalty weight for the critical share; zero means DefaultCriticalWeight.
+func securityScore(total, critical, minor int, criticalWeight float64) int {
+	if criticalWeight == 0 {
+		criticalWeight = DefaultCriticalWeight
+	}
 	if total == 0 {
 		return 100
 	}
-	penalty := 60*float64(critical)/float64(total) + 20*float64(minor)/float64(total)
+	penalty := criticalWeight*float64(critical)/float64(total) + 20*float64(minor)/float64(total)
 	score := int(math.Round(100 - penalty))
 	if score < 0 {
 		return 0
