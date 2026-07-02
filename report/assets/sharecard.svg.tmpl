@@ -29,8 +29,8 @@
       <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(247,247,247,0.06)" stroke-width="22"></circle>
       {{range .Donut}}<circle cx="100" cy="100" r="80" fill="none" stroke="{{.Color}}" stroke-width="22" stroke-dasharray="{{.Dash}}" stroke-dashoffset="{{.Offset}}" stroke-linecap="butt"></circle>{{end}}
     </g>
-    <text x="100" y="98" text-anchor="middle" font-size="{{.CardSessionsFont}}" font-weight="800" fill="#F7F7F7">{{.SessionsLabel}}</text>
-    <text x="100" y="122" text-anchor="middle" font-size="13" fill="rgba(247,247,247,0.4)">sessions</text>
+    <text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-size="{{.CardSessionsFont}}" font-weight="800" fill="#F7F7F7">{{.SessionsLabel}}</text>
+    <text x="100" y="{{.CardCaptionY}}" text-anchor="middle" font-size="13" fill="rgba(247,247,247,0.4)">sessions</text>
   </svg>
   <text x="950" y="446" text-anchor="middle" font-size="14" fill="rgba(247,247,247,0.4)">sessions by risk tier</text>
 

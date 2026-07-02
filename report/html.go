@@ -79,6 +79,7 @@ type htmlView struct {
 	CardAccent       string
 	CardHigh         string
 	CardSessionsFont int
+	CardCaptionY     int
 	SlackText        string
 }
 
@@ -184,6 +185,10 @@ func buildView(rep risk.Report, version string, css template.CSS) htmlView {
 		})
 	}
 
+	// The donut count centers on y=100 via dominant-baseline; the caption sits
+	// just below it, so its baseline scales with the (font-size-dependent) count.
+	sessionsFont := cardSessionsFont(comma(int64(rep.Totals.Sessions)))
+
 	return htmlView{
 		CSS:            css,
 		Version:        version,
@@ -209,7 +214,8 @@ func buildView(rep risk.Report, version string, css template.CSS) htmlView {
 
 		CardAccent:       scoreColor(rep.SecurityScore),
 		CardHigh:         comma(rep.Totals.HighFindings),
-		CardSessionsFont: cardSessionsFont(comma(int64(rep.Totals.Sessions))),
+		CardSessionsFont: sessionsFont,
+		CardCaptionY:     100 + sessionsFont/2 + 16,
 		SlackText:        slackText(rep),
 	}
 }
