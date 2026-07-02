@@ -680,3 +680,173 @@ a { color: inherit; }
 @media (max-width: 600px) {
   .rr-cta { padding: 26px 24px; }
 }
+
+/* ── Window-bar actions (Share / Save PDF) ── */
+.rr-bar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rr-action {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0c0c0c;
+  background: #F7F7F7;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.rr-action:hover { opacity: 0.88; }
+.rr-action:active { transform: translateY(1px); }
+.rr-action:disabled { opacity: 0.5; cursor: default; }
+
+.rr-action-ghost {
+  color: rgba(247, 247, 247, 0.82);
+  background: rgba(247, 247, 247, 0.08);
+  border: 1px solid rgba(247, 247, 247, 0.15);
+}
+
+.rr-action-ghost:hover { background: rgba(247, 247, 247, 0.14); opacity: 1; }
+
+/* ── Off-screen share card + visually-hidden Slack text ── */
+.rr-sharecard-host {
+  position: absolute;
+  left: -99999px;
+  top: 0;
+  width: 1200px;
+  height: 630px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rr-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Share toast ── */
+.rr-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  width: min(440px, calc(100vw - 32px));
+  transform: translateX(-50%) translateY(20px);
+  background: #161616;
+  border: 1px solid rgba(247, 247, 247, 0.14);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 100;
+}
+
+.rr-toast-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.rr-toast-head { display: flex; align-items: center; gap: 8px; }
+
+.rr-toast-title { font-size: 14px; font-weight: 700; color: #F7F7F7; }
+
+.rr-toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(247, 247, 247, 0.5);
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.rr-toast-close:hover { color: #F7F7F7; }
+
+.rr-toast-note {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(247, 247, 247, 0.55);
+  margin: 8px 0 12px;
+}
+
+.rr-toast-text {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: rgba(247, 247, 247, 0.75);
+  background: rgba(247, 247, 247, 0.05);
+  border: 1px solid rgba(247, 247, 247, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.rr-toast-actions { display: flex; gap: 8px; }
+
+.rr-toast-btn {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0c0c0c;
+  background: #F7F7F7;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.rr-toast-btn:hover { opacity: 0.88; }
+
+.rr-toast-btn-ghost {
+  color: rgba(247, 247, 247, 0.82);
+  background: rgba(247, 247, 247, 0.08);
+  border: 1px solid rgba(247, 247, 247, 0.15);
+}
+
+.rr-toast-btn-ghost:hover { background: rgba(247, 247, 247, 0.14); }
+
+/* ── Print / Save-as-PDF ── keep the branded dark look, drop interactive chrome. */
+@media print {
+  .hoop-bg-grid,
+  .rr-action,
+  .rr-cta,
+  .rr-sharecard-host,
+  .rr-toast,
+  .rr-sr-only { display: none !important; }
+
+  html, body, .rr-root { background: #0c0c0c !important; }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .rr-page { padding: 24px 0 !important; max-width: none !important; }
+  .rr-window { box-shadow: none !important; }
+
+  @page { margin: 12mm; }
+}
