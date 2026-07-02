@@ -9,7 +9,8 @@
 //
 // Everything lands in homebrew/dist/:
 //   hooprs_<version>_<os>_<arch>.tar.gz   uploaded to the GitHub release
-//   hooprs.rb                             copied into the hoophq/homebrew-tap repo
+//   checksums.txt                         uploaded alongside; verified by install.sh
+//   hooprs.rb                             committed to Formula/ in hoophq/homebrew-tap
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -65,6 +66,14 @@ for (const p of PLATFORMS) {
   sha[p.key] = createHash("sha256").update(readFileSync(archivePath)).digest("hex");
   console.log(`packaged ${archive}  ${sha[p.key]}`);
 }
+
+// sha256sum-compatible manifest (two-space separator) so install.sh can verify
+// downloads with `grep " <archive>$"`.
+const checksums =
+  PLATFORMS.map((p) => `${sha[p.key]}  hooprs_${version}_${p.os}_${p.arch}.tar.gz`).join("\n") +
+  "\n";
+writeFileSync(join(distDir, "checksums.txt"), checksums);
+console.log("wrote checksums.txt");
 
 const url = (p) =>
   `https://github.com/${repo}/releases/download/${tag}/hooprs_${version}_${p.os}_${p.arch}.tar.gz`;

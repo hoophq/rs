@@ -23,6 +23,19 @@ zero-dependency regex engine. No external DLP service, no API calls.
 
 ## Install
 
+### Shell script
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hoophq/rs/main/install.sh | sh
+```
+
+Downloads the prebuilt binary for your platform from the
+[latest release](https://github.com/hoophq/rs/releases/latest), verifies its
+checksum, and installs it to `/usr/local/bin` (or `~/.local/bin` when
+`/usr/local/bin` is not writable). Covers macOS (arm64, x64) and Linux (x64,
+arm64). Pin a version with `HOOPRS_VERSION=v0.2.0` or change the destination
+with `HOOPRS_INSTALL_DIR=~/bin`.
+
 ### Homebrew
 
 ```bash
@@ -30,6 +43,7 @@ brew install hoophq/tap/hooprs
 ```
 
 Prebuilt, no compile step. Covers macOS (arm64, x64) and Linux (x64, arm64).
+The formula lives in [hoophq/homebrew-tap](https://github.com/hoophq/homebrew-tap).
 
 ### npm
 
