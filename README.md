@@ -137,6 +137,25 @@ appended since the last run (useful for "what changed since last time").
 
 ---
 
+## Share it
+
+The report's title bar has two buttons, so a scan turns into a message to your
+team in one click:
+
+- **Share** rasterizes a 1200×630 summary card (score, risk donut, headline
+  counts) to PNG and copies it to your clipboard, then shows the ready-to-paste
+  Slack message — paste the image, send the text. If your browser blocks
+  clipboard access, the same panel offers a PNG download.
+- **Save PDF** opens the print dialog with a print stylesheet that keeps the
+  branded dark look and drops the interactive chrome — pick "Save as PDF".
+
+Both run entirely in the page: the card is built from the same value-free data
+as the report (entity types and counts, never the matched values), and the
+Slack message carries only aggregate counts plus the install one-liner. Sharing
+a scan never re-leaks a leak.
+
+---
+
 ## What it detects
 
 Structured PII (via the [alcatraz](https://github.com/hoophq/alcatraz) engine)
