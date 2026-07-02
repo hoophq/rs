@@ -3,8 +3,8 @@ name: Publish to Homebrew
 # Auto Release creates the vX.Y.Z tag/release with GITHUB_TOKEN, and a tag pushed
 # by GITHUB_TOKEN cannot start a `push: tags` workflow. So this chains off Auto
 # Release's completion: it uploads the brew archives to that release and commits
-# the formula to Formula/ on main — this repo doubles as its own brew tap
-# (`brew tap hoophq/rs https://github.com/hoophq/rs.git`).
+# the formula to hoophq/homebrew-tap (the shared tap, same one leash publishes
+# to), so users can `brew install hoophq/tap/hooprs`.
 on:
   workflow_run:
     workflows: ["Auto Release"]
@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 # Serialize runs: back-to-back releases would otherwise race on pushing the
-# formula commit to main.
+# formula commit to the tap.
 concurrency:
   group: brew-publish
   cancel-in-progress: false
@@ -82,20 +82,19 @@ jobs:
         run: |
           set -euo pipefail
           # --clobber lets a re-run replace assets instead of failing on
-          # "asset already exists".
-          gh release upload "$TAG" homebrew/dist/*.tar.gz --clobber --repo "${{ github.repository }}"
+          # "asset already exists". checksums.txt is consumed by install.sh.
+          gh release upload "$TAG" homebrew/dist/*.tar.gz homebrew/dist/checksums.txt \
+            --clobber --repo "${{ github.repository }}"
 
-      - name: Check out main for the formula commit
+      - name: Check out the tap
         uses: actions/checkout@v4
         with:
-          # The formula lives in this same repo (it is its own brew tap), so the
-          # default GITHUB_TOKEN suffices — no cross-repo PAT. The build above
-          # ran from head_sha; the formula commit must land on current main.
-          ref: main
+          # A cross-repo push needs a token with write access to the tap; the
+          # default GITHUB_TOKEN is scoped to this repo only. Same secret leash
+          # uses for its GoReleaser cask publish.
+          repository: hoophq/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           path: tap
-          # Full history so the pull --rebase below always finds the merge base
-          # even when main moves between checkout and push.
-          fetch-depth: 0
 
       - name: Update and push the formula
         env:
@@ -113,11 +112,9 @@ jobs:
           if git diff --cached --quiet; then
             echo "Formula already up to date for v${VERSION}; nothing to push."
           else
-            git commit -m "brew formula for hooprs ${VERSION}"
-            # main may have moved since checkout (another merge landing); rebase
-            # the formula commit on top instead of failing the push. This push
-            # uses GITHUB_TOKEN, so it does not trigger other workflows (and
-            # Auto Release skips direct pushes regardless) — no release loop.
+            git commit -m "hooprs ${VERSION}"
+            # The tap may have moved since checkout (e.g. a leash release
+            # landing); rebase our formula commit on top instead of failing.
             git pull --rebase origin main
             git push origin main
           fi
