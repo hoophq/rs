@@ -93,7 +93,7 @@ jobs:
           # default GITHUB_TOKEN is scoped to this repo only. Same secret leash
           # uses for its GoReleaser cask publish.
           repository: hoophq/homebrew-tap
-          token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: tap
 
       - name: Update and push the formula
