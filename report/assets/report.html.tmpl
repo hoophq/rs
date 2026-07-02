@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Risk Analysis Report</title>
+<title>Risk Analysis Report · hooprs</title>
 <style>{{.CSS}}</style>
 </head>
 <body>
@@ -35,19 +35,19 @@
               <path d="M36.7283 63.0103C51.238 63.0103 63.0005 51.2478 63.0005 36.7381C63.0005 22.2283 51.238 10.4658 36.7283 10.4658C22.2185 10.4658 10.4561 22.2283 10.4561 36.7381C10.4561 51.2478 22.2185 63.0103 36.7283 63.0103Z" fill="#F7F7F7"/>
               <path d="M111.944 138.226C126.454 138.226 138.216 126.464 138.216 111.954C138.216 97.4441 126.454 85.6816 111.944 85.6816C97.4344 85.6816 85.6719 97.4441 85.6719 111.954C85.6719 126.464 97.4344 138.226 111.944 138.226Z" fill="#F7F7F7"/>
             </svg>
-            <span class="rr-brand-name">risk-analyzer</span>
+            <span class="rr-brand-name">hooprs</span>
             <span class="rr-brand-ver">{{.Version}}</span>
           </div>
           <h1 class="rr-title">Risk Analysis Report</h1>
           <p class="rr-pitch">
-            Generated locally by the open-source CLI. hoop.dev brings this same visibility to every AI agent in production, automatically and at scale.
+            Generated locally by hooprs, the open-source CLI. hoop.dev brings this same visibility to every AI agent in production, automatically and at scale.
             <a href="https://hoop.dev" target="_blank" rel="noreferrer" class="rr-pitch-link">Get to know hoop.dev →</a>
           </p>
           <div class="rr-meta-row">
             <span class="rr-meta-chip">{{.SourcesLabel}}</span>
             <span class="rr-meta-chip">{{.ScopeLabel}}</span>
             <span class="rr-meta-chip">{{.WindowLabel}}</span>
-            <span class="rr-meta-chip rr-meta-chip-ok">Computed locally · nothing sent to the gateway</span>
+            <span class="rr-meta-chip rr-meta-chip-ok">Computed locally · nothing leaves your machine</span>
           </div>
         </div>
 
@@ -59,7 +59,7 @@
                 {{range .Donut}}<circle class="rr-seg" data-tier="{{.Key}}" cx="100" cy="100" r="80" fill="none" stroke="{{.Color}}" stroke-width="22" stroke-dasharray="{{.Dash}}" stroke-dashoffset="{{.Offset}}" stroke-linecap="butt"></circle>{{end}}
               </svg>
               <div class="rr-donut-center">
-                <div class="rr-donut-big">{{.SessionsLabel}}</div>
+                <div class="rr-donut-big{{.DonutSizeClass}}">{{.SessionsLabel}}</div>
                 <div class="rr-donut-cap">sessions</div>
               </div>
             </div>
@@ -100,7 +100,7 @@
             <div class="rr-kpi-sub">{{.KpiCriticalSub}}</div>
           </div>
           <div class="rr-kpi">
-            <div class="rr-kpi-label">PII findings</div>
+            <div class="rr-kpi-label">Total findings</div>
             <div class="rr-kpi-num">{{.KpiFindings}}</div>
             <div class="rr-kpi-sub">{{.KpiFindingsSub}}</div>
           </div>
@@ -108,7 +108,7 @@
 
         <section class="rr-section">
           <div class="rr-section-head">
-            <h2 class="rr-section-title">PII Detection</h2>
+            <h2 class="rr-section-title">PII &amp; Secrets</h2>
             <span class="rr-section-sub">{{.PIISub}}</span>
           </div>
           <div class="rr-pii-filters">
@@ -150,10 +150,10 @@
       </div>
     </div>
 
-    <a href="https://github.com/hoophq" target="_blank" rel="noreferrer" class="rr-cta">
+    <a href="https://github.com/hoophq/rs" target="_blank" rel="noreferrer" class="rr-cta">
       <div class="rr-cta-text">
         <p class="rr-cta-title">Run it yourself, or read the source.</p>
-        <p class="rr-cta-body">Risk Analyzer is open source. Install the CLI, inspect every line, and contribute on GitHub.</p>
+        <p class="rr-cta-body">hooprs is open source. Install the CLI, inspect every line, and contribute on GitHub.</p>
       </div>
       <span class="rr-cta-btn">View on GitHub →</span>
     </a>

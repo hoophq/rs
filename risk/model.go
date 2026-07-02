@@ -36,6 +36,15 @@ type SessionInput struct {
 	PIIInput   map[string]int64
 	PIIOutput  map[string]int64
 	Guardrails []Violation
+	// Details carries the matched values. The orchestration layer populates it
+	// only when the user opts in (-show-values); it stays nil otherwise.
+	Details []FindingDetail
+}
+
+// FindingDetail is one matched value, captured only on explicit opt-in.
+type FindingDetail struct {
+	Entity string
+	Value  string
 }
 
 // Meta is the run-level context shown in the report header.
@@ -71,8 +80,18 @@ type SessionRow struct {
 	Findings int64  `json:"findings"`
 	Date     string `json:"date"`
 
+	// Values are the high-severity matched values behind a critical session,
+	// present only with -show-values and only on the top critical rows. The
+	// json:"-" tag is a hard guarantee: matched values never reach the
+	// machine-readable report, only the terminal summary.
+	Values []FindingDetail `json:"-"`
+
 	exposure float64
 }
+
+// MaxValueSessions caps how many critical sessions keep their matched values:
+// the ten most exposed ones, mirroring the terminal's session-feed limit.
+const MaxValueSessions = 10
 
 // Totals are the headline counters.
 type Totals struct {
@@ -147,6 +166,7 @@ func Build(meta Meta, sessions []SessionInput) Report {
 			Risk:     tier,
 			Findings: findingTotal,
 			Date:     dateLabel(s.StartedAt),
+			Values:   highSeverityValues(s.Details),
 			exposure: directedExposure(s.PIIOutput, outputWeight) + directedExposure(s.PIIInput, inputWeight),
 		})
 	}
@@ -172,6 +192,18 @@ func Build(meta Meta, sessions []SessionInput) Report {
 		}
 		return rows[i].exposure > rows[j].exposure
 	})
+
+	// Matched values stay only on the ten most exposed critical sessions
+	// (critical rows sort first, so they lead the slice); every other row is
+	// counts-only.
+	valueRows := 0
+	for i := range rows {
+		if rows[i].Risk == "critical" && valueRows < MaxValueSessions {
+			valueRows++
+			continue
+		}
+		rows[i].Values = nil
+	}
 
 	total := len(sessions)
 	pct := func(n int) int {
@@ -223,6 +255,18 @@ func sessionTier(summary map[string]int64) string {
 		}
 	}
 	return tier
+}
+
+// highSeverityValues keeps only the high-severity details — the findings that
+// made the session critical — dropping the medium/low noise around them.
+func highSeverityValues(details []FindingDetail) []FindingDetail {
+	var kept []FindingDetail
+	for _, d := range details {
+		if Info(d.Entity).Severity == SeverityHigh {
+			kept = append(kept, d)
+		}
+	}
+	return kept
 }
 
 func directedExposure(summary map[string]int64, weight float64) float64 {

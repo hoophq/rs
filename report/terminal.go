@@ -35,7 +35,7 @@ func Terminal(w io.Writer, rep risk.Report) {
 	p("Direction: %s in input · %s in output\n", comma(rep.Totals.Input), comma(rep.Totals.Output))
 
 	if len(rep.PII) > 0 {
-		p("\nPII detection:\n")
+		p("\nPII & secrets:\n")
 		tw := tabwriter.NewWriter(w, 0, 4, 2, ' ', 0)
 		fmt.Fprintln(tw, "  ENTITY\tFAMILY\tSEVERITY\tTOTAL\tSESSIONS")
 		for _, e := range rep.PII {
@@ -64,6 +64,8 @@ func Terminal(w io.Writer, rep risk.Report) {
 		}
 	}
 
+	printValues(w, rep.Sessions)
+
 	if len(rep.Guardrails) > 0 {
 		p("\nGuardrail violations: %s\n", comma(int64(len(rep.Guardrails))))
 		byRule := map[string]int{}
@@ -82,4 +84,75 @@ func Terminal(w io.Writer, rep risk.Report) {
 		tw.Flush()
 	}
 	p("\n")
+}
+
+// maxValuesPerSession caps the distinct values printed per session so one
+// pathological session cannot flood the terminal.
+const maxValuesPerSession = 20
+
+// printValues renders the matched high-severity values that risk.Build kept on
+// the top critical sessions (populated only with -show-values). Repeated
+// values collapse into one line with an occurrence count.
+func printValues(w io.Writer, sessions []risk.SessionRow) {
+	any := false
+	for _, s := range sessions {
+		if len(s.Values) > 0 {
+			any = true
+			break
+		}
+	}
+	if !any {
+		return
+	}
+
+	fmt.Fprintf(w, "\nMatched values (top %d critical sessions, high severity only):\n", risk.MaxValueSessions)
+	fmt.Fprintf(w, "  Sensitive output: these are the detected values themselves. Not written to the HTML/JSON reports.\n")
+	for _, s := range sessions {
+		if len(s.Values) == 0 {
+			continue
+		}
+		fmt.Fprintf(w, "\n  %s · %s\n", shortID(s.ID), s.Tool)
+		tw := tabwriter.NewWriter(w, 0, 4, 2, ' ', 0)
+		printed := 0
+		skipped := 0
+		for _, v := range dedupeValues(s.Values) {
+			if printed >= maxValuesPerSession {
+				skipped++
+				continue
+			}
+			line := fmt.Sprintf("    %s\t%s", v.Entity, v.Value)
+			if v.Count > 1 {
+				line += fmt.Sprintf("\t×%s", comma(int64(v.Count)))
+			}
+			fmt.Fprintln(tw, line)
+			printed++
+		}
+		tw.Flush()
+		if skipped > 0 {
+			fmt.Fprintf(w, "    … and %s more distinct values\n", comma(int64(skipped)))
+		}
+	}
+}
+
+// valueLine is one deduplicated matched value with its occurrence count.
+type valueLine struct {
+	Entity string
+	Value  string
+	Count  int
+}
+
+// dedupeValues collapses identical (entity, value) pairs, preserving first-seen
+// order so the output follows the order findings appeared in the session.
+func dedupeValues(details []risk.FindingDetail) []valueLine {
+	index := map[risk.FindingDetail]int{}
+	lines := make([]valueLine, 0, len(details))
+	for _, d := range details {
+		if i, ok := index[d]; ok {
+			lines[i].Count++
+			continue
+		}
+		index[d] = len(lines)
+		lines = append(lines, valueLine{Entity: d.Entity, Value: d.Value, Count: 1})
+	}
+	return lines
 }

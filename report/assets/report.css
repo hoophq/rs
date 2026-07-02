@@ -235,6 +235,11 @@ a { color: inherit; }
   line-height: 1;
 }
 
+/* Shrink the donut count so large totals stay inside the ring. */
+.rr-donut-big-md { font-size: 38px; }
+.rr-donut-big-sm { font-size: 30px; }
+.rr-donut-big-xs { font-size: 24px; }
+
 .rr-donut-cap {
   font-size: 12px;
   font-weight: 500;
@@ -488,7 +493,9 @@ a { color: inherit; }
 
 .rr-pii-row {
   display: grid;
-  grid-template-columns: 150px 1fr 110px 44px 64px;
+  /* entity/total/sessions grow with content: canonical entity names run long
+     (FI_PERSONAL_IDENTITY_CODE) and totals can reach the hundreds of thousands */
+  grid-template-columns: minmax(150px, max-content) 1fr 110px minmax(44px, max-content) minmax(64px, max-content);
   align-items: center;
   gap: 16px;
   padding: 9px 0;
@@ -532,6 +539,7 @@ a { color: inherit; }
   font-weight: 500;
   color: rgba(247, 247, 247, 0.75);
   text-align: right;
+  white-space: nowrap;
 }
 
 .rr-pii-sess {
@@ -539,6 +547,7 @@ a { color: inherit; }
   font-size: 11.5px;
   color: rgba(247, 247, 247, 0.38);
   text-align: right;
+  white-space: nowrap;
 }
 
 @media (max-width: 680px) {

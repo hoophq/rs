@@ -61,6 +61,7 @@ type htmlView struct {
 	Score          int
 	Donut          []donutSeg
 	SessionsLabel  string
+	DonutSizeClass string
 	Tiers          []tierView
 	KpiSessions    string
 	KpiSessionsSub string
@@ -177,6 +178,7 @@ func buildView(rep risk.Report, version string, css template.CSS) htmlView {
 		Score:          rep.SecurityScore,
 		Donut:          donut,
 		SessionsLabel:  comma(int64(rep.Totals.Sessions)),
+		DonutSizeClass: donutSizeClass(comma(int64(rep.Totals.Sessions))),
 		Tiers:          tiers,
 		KpiSessions:    comma(int64(rep.Totals.Sessions)),
 		KpiSessionsSub: comma(int64(rep.Totals.Messages)) + " messages analyzed",
@@ -188,6 +190,21 @@ func buildView(rep risk.Report, version string, css template.CSS) htmlView {
 		Filters:        filters,
 		PII:            pii,
 		Sessions:       sessions,
+	}
+}
+
+// donutSizeClass steps the donut count font down as the formatted total grows,
+// so large session counts stay inside the 200px ring.
+func donutSizeClass(label string) string {
+	switch n := len(label); {
+	case n <= 5:
+		return ""
+	case n <= 7:
+		return " rr-donut-big-md"
+	case n <= 9:
+		return " rr-donut-big-sm"
+	default:
+		return " rr-donut-big-xs"
 	}
 }
 

@@ -106,6 +106,7 @@ Common options:
 | `-incremental` | `false` | Only scan content appended since the last run |
 | `-state` | `~/.risk-analyzer/state.json` | Incremental scan state file |
 | `-quiet` | `false` | Suppress the terminal summary |
+| `-show-values` | `false` | Print the matched high-severity values for the top 10 critical sessions in the terminal summary (never written to the HTML/JSON reports) |
 | `-open` | `true` | Open the HTML report in the default browser when done |
 | `-version` | `false` | Print the hooprs version and exit |
 
@@ -168,6 +169,11 @@ assistant/tool output). See [`examples/guardrails.json`](examples/guardrails.jso
 Everything runs on your machine. The HTML/JSON reports contain **only** entity
 types, counts, severities, and session identifiers, never the matched values.
 Nothing leaves your machine.
+
+`-show-values` is the one deliberate exception: it prints the matched
+high-severity values for the top 10 critical sessions **to the terminal only**,
+so you can locate the actual leaks. The HTML and JSON reports stay value-free
+even with the flag on.
 
 ## Layout
 

@@ -52,6 +52,7 @@ type options struct {
 	incremental bool
 	quiet       bool
 	open        bool
+	showValues  bool
 	showVersion bool
 }
 
@@ -71,6 +72,7 @@ func run() error {
 	flag.StringVar(&opt.engine, "engine", "alcatraz", "detection engine: alcatraz (default, full PII set) or stub (zero-dependency fallback)")
 	flag.BoolVar(&opt.incremental, "incremental", false, "only scan content appended since the last run (persists offsets)")
 	flag.BoolVar(&opt.quiet, "quiet", false, "do not print the terminal summary")
+	flag.BoolVar(&opt.showValues, "show-values", false, "print the matched high-severity values for the top 10 critical sessions in the terminal summary (sensitive; never written to the HTML/JSON reports)")
 	flag.BoolVar(&opt.open, "open", true, "open the HTML report in the default browser when done")
 	flag.BoolVar(&opt.showVersion, "version", false, "print the hooprs version and exit")
 	flag.Parse()
@@ -123,7 +125,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	inputs := analyzeSessions(analyzer, engine, sessions)
+	inputs := analyzeSessions(analyzer, engine, sessions, opt.showValues)
 
 	rep := risk.Build(risk.Meta{
 		GeneratedAt: time.Now(),
@@ -291,7 +293,10 @@ func filterSessions(sessions []types.Session, project, session *regexp.Regexp, d
 	return kept
 }
 
-func analyzeSessions(analyzer analyze.Analyzer, engine *guardrails.Engine, sessions []types.Session) []risk.SessionInput {
+// analyzeSessions runs the detection engine over every message. Matched values
+// are captured into SessionInput.Details only when showValues is set; the
+// default run aggregates counts and lets the values go.
+func analyzeSessions(analyzer analyze.Analyzer, engine *guardrails.Engine, sessions []types.Session, showValues bool) []risk.SessionInput {
 	inputs := make([]risk.SessionInput, 0, len(sessions))
 	for _, sess := range sessions {
 		in := risk.SessionInput{
@@ -317,6 +322,9 @@ func analyzeSessions(analyzer analyze.Analyzer, engine *guardrails.Engine, sessi
 					in.PIIInput[f.EntityType]++
 				} else {
 					in.PIIOutput[f.EntityType]++
+				}
+				if showValues {
+					in.Details = append(in.Details, risk.FindingDetail{Entity: f.EntityType, Value: f.Value})
 				}
 			}
 			if !engine.Empty() {
