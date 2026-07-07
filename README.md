@@ -260,4 +260,4 @@ report/        terminal + self-contained HTML renderer (embedded CSS/JS)
 
 ---
 
-Built by the team behind [hoop.dev](https://hoop.dev).
+MIT © [hoop.dev](https://hoop.dev/?utm_source=fence&utm_medium=github&utm_campaign=att-launch-072026) — built by the team behind hoop.
