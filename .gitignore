@@ -10,6 +10,10 @@ risk-report.json
 # local incremental scan state
 .risk-analyzer/
 
+# local multi-module dev against a sibling alcatraz checkout
+/go.work
+/go.work.sum
+
 # prebuilt binaries injected into the npm platform packages by npm/build.mjs
 /npm/rs-*/bin/
 

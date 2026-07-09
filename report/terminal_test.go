@@ -51,6 +51,33 @@ func TestTerminalShowsValuesForCriticalSessions(t *testing.T) {
 	}
 }
 
+func TestTerminalLabelsMaskedValues(t *testing.T) {
+	// With -mask-values the orchestration layer captures values already
+	// masked by the alcatraz anonymizer; the renderer only flips the caption.
+	rep := risk.Build(risk.Meta{GeneratedAt: time.Now(), ValuesMasked: true}, []risk.SessionInput{
+		{
+			Tool: "claude", ID: "sess_critical", Messages: 4,
+			PIISummary: map[string]int64{"US_SSN": 1},
+			PIIOutput:  map[string]int64{"US_SSN": 1},
+			Details:    []risk.FindingDetail{{Entity: "US_SSN", Value: "*******1120"}},
+		},
+	})
+
+	var buf bytes.Buffer
+	Terminal(&buf, rep)
+	out := buf.String()
+
+	if !strings.Contains(out, "*******1120") {
+		t.Errorf("expected the masked value in the output, got:\n%s", out)
+	}
+	if !strings.Contains(out, "masked to their last 4 characters") {
+		t.Errorf("expected the masked-values caption, got:\n%s", out)
+	}
+	if strings.Contains(out, "these are the detected values themselves") {
+		t.Errorf("raw-values warning must not appear in masked mode, got:\n%s", out)
+	}
+}
+
 func TestTerminalOmitsValuesSectionByDefault(t *testing.T) {
 	rep := buildWithDetails(nil) // no -show-values: no details collected
 

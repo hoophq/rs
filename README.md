@@ -33,7 +33,8 @@ You have no idea how much until you look. hooprs looks:
 
 - 🔒 **Local only.** Detection runs in-process on your machine. No DLP
   service, no API calls, nothing leaves your disk — for a scanner that reads
-  your secrets, this is the whole point.
+  your secrets, this is the whole point. (The one download is the optional
+  NER model when you pass `-ner`, fetched once and cached.)
 - ✅ **Verified, not just shape-matched.** Credit cards are Luhn-checked,
   IBANs mod-97-checked, SSNs range-validated. A 16-digit number that fails
   the checksum never reaches your report.
@@ -73,12 +74,51 @@ destination with `HOOPRS_INSTALL_DIR=~/bin`. The Homebrew formula lives in
 [hoophq/homebrew-tap](https://github.com/hoophq/homebrew-tap); npm pulls the
 binary through optional dependencies (`@hoophq/rs-<os>-<arch>`).
 
-Building from source needs Go 1.24+ and has a single pure-Go dependency (the
-[alcatraz](https://github.com/hoophq/alcatraz) detection library):
+Building from source needs Go 1.26+. Everything is pure Go — no cgo: the
+[alcatraz](https://github.com/hoophq/alcatraz) detection library plus, for the
+optional statistical NER mode, alcatraz's `ner` module and its in-process ONNX
+runtime.
 
 ```bash
 go build -o hooprs ./cmd/hooprs
 ```
+
+### Faster NER: the ORT build
+
+The prebuilt binaries run the NER model on hugot's pure-Go backend: zero
+native dependencies, works everywhere, but CPU-slow — large session histories
+can take many minutes. A self-build with the ONNX Runtime backend is roughly
+**10x faster** on the same hardware, and can additionally use a GPU
+(CoreML/CUDA/DirectML). It needs cgo plus two native libraries:
+
+```bash
+# 1. Link-time dependency: libtokenizers.a (match the version in go.mod)
+curl -fsSL https://github.com/daulet/tokenizers/releases/download/v1.27.0/libtokenizers.darwin-arm64.tar.gz | tar xz
+
+# 2. Runtime dependency: the ONNX Runtime shared library
+brew install onnxruntime   # macOS (auto-detected)
+# Linux: download libonnxruntime.so from github.com/microsoft/onnxruntime/releases
+
+# 3. Build with the ORT tag
+CGO_LDFLAGS="-L$PWD" go build -tags ORT -o hooprs ./cmd/hooprs
+
+# 4. Select the backend at runtime
+HOOPRS_NER_BACKEND=ort ./hooprs -ner
+```
+
+The backend is a runtime choice via environment variables, so the same ORT
+binary still defaults to the pure-Go backend when the variables are unset:
+
+| Variable | Values | Meaning |
+|----------|--------|---------|
+| `HOOPRS_NER_BACKEND` | `ort`, `xla` | Inference backend (empty = pure Go) |
+| `HOOPRS_NER_ORT_LIB` | path | `libonnxruntime` file or its directory, when not auto-detected |
+| `HOOPRS_NER_ACCELERATOR` | `coreml`, `cuda`, `directml` | GPU execution provider (empty = CPU) |
+
+The published releases stay pure-Go on purpose — they cross-compile from one
+host and run with zero setup. See alcatraz's
+[Faster inference](https://github.com/hoophq/alcatraz#faster-inference-ort-xla-and-gpu)
+section for the full build matrix.
 
 ## Quickstart
 
@@ -100,8 +140,15 @@ hooprs -tools cursor -project 'my-app'
 # raise the confidence bar (default 0.4)
 hooprs -min-score 0.6
 
+# add model-backed PERSON/LOCATION detection (downloads the ONNX model on
+# first use; adds significant scan time on large histories)
+hooprs -ner
+
 # show the actual leaked values in the terminal (never in the reports)
 hooprs -show-values
+
+# same, but masked to the last 4 characters — safe to screen-share
+hooprs -mask-values
 ```
 
 <details>
@@ -122,10 +169,13 @@ hooprs -show-values
 | `-min-score` | `0.4` | Minimum detection confidence (0 to 1) to count |
 | `-critical-weight` | `60` | Security-score penalty weight (0 to 100) for the critical-session share |
 | `-engine` | `alcatraz` | Detection engine: `alcatraz` (full PII set) or `stub` (zero-dependency fallback) |
+| `-ner` | `false` | Run the statistical NER model (`PERSON`, `LOCATION`) in-process; downloads the ONNX model on first use and adds significant scan time on large histories |
+| `-workers` | `0` | Number of parallel analysis workers; `0` means one per CPU core |
 | `-incremental` | `false` | Only scan content appended since the last run |
 | `-state` | `~/.risk-analyzer/state.json` | Incremental scan state file |
 | `-quiet` | `false` | Suppress the terminal summary |
 | `-show-values` | `false` | Print the matched high-severity values for the top 10 critical sessions in the terminal summary (never written to the HTML/JSON reports) |
+| `-mask-values` | `false` | Like `-show-values` but each value is masked to its last 4 characters (via the alcatraz anonymizer), so the summary can be shared without re-leaking |
 | `-open` | `true` | Open the HTML report in the default browser when done |
 | `-version` | `false` | Print the hooprs version and exit |
 
@@ -169,16 +219,23 @@ pack):
 | **Government / national IDs** | US SSN, ITIN, passport, driver license; UK NINO; plus national identifiers for AU, IN, IT, ES, SG, PL, KR, FI and TH |
 | **Health** | Medical license; UK NHS and AU Medicare numbers |
 | **Contact / network** | Email, phone, IP address, URL |
+| **Identity** | Person names and locations, via the in-process NER model (opt-in `-ner`) |
 
 Detection pairs regex **patterns** with checksum and format **validators**
 (Luhn, IBAN mod-97, SSN/national-ID range rules), and matches below the
-`-min-score` threshold are dropped. Pass `-engine stub` for a zero-dependency
-regex fallback.
+`-min-score` threshold are dropped. Model-backed `PERSON` and `LOCATION`
+detection (NER) is opt-in: pass `-ner` to enable it. `-engine stub` selects a
+zero-dependency regex fallback.
 
-> **Note on NER:** `PERSON`/`LOCATION`-style entities that need an NLP model
-> stay out of this version. The analyzer sits behind a small
-> `analyze.Analyzer` interface, so a future NLP-backed engine drops in without
-> touching the pipeline.
+> **Note on NER:** `PERSON`/`LOCATION` entities need a statistical model, so
+> `-ner` loads the
+> [alcatraz `ner` module](https://github.com/hoophq/alcatraz#statistical-ner-optional-module)'s
+> ONNX model, run **in-process** (pure Go, no cgo). The model is downloaded
+> from Hugging Face on first use and cached; inference itself — like all
+> detection — runs entirely on your machine. Model inference is CPU-heavy:
+> expect noticeably longer scans on large histories with the prebuilt
+> binaries. If that matters to you, see
+> [Faster NER: the ORT build](#faster-ner-the-ort-build).
 
 ---
 
@@ -241,7 +298,15 @@ Nothing leaves your machine.
 `-show-values` is the one deliberate exception: it prints the matched
 high-severity values for the top 10 critical sessions **to the terminal only**,
 so you can locate the actual leaks. The HTML and JSON reports stay value-free
-even with the flag on — and there's a test pinning that guarantee.
+even with the flag on — and there's a test pinning that guarantee. Prefer
+`-mask-values` when someone else might see your terminal: it prints the same
+lines with every value masked to its last 4 characters (alcatraz's anonymizer),
+so nothing is re-leaked.
+
+NER (opt-in via `-ner`) performs a single network operation: downloading the
+ONNX model from Hugging Face on first use (cached afterwards). Session content
+is never uploaded — the model runs in-process, on your machine. The default
+run, without `-ner`, performs zero network activity.
 
 ---
 
@@ -252,7 +317,7 @@ cmd/hooprs/    CLI: flags → discover → analyze → risk → render
 sources/       discover & parse claude/cursor/opencode sessions
 state/         incremental scan offsets
 types/         normalized Session/Message model
-analyze/       Analyzer interface + alcatraz engine, shared secrets pack, Stub fallback
+analyze/       Analyzer interface + alcatraz engine (optional NER), shared secrets pack, Stub fallback
 guardrails/    local rules loader + direction-aware matcher
 risk/          severity catalog + risk model (tiers, exposure, score)
 report/        terminal + self-contained HTML renderer (embedded CSS/JS)

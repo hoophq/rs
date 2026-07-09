@@ -64,7 +64,7 @@ func Terminal(w io.Writer, rep risk.Report) {
 		}
 	}
 
-	printValues(w, rep.Sessions)
+	printValues(w, rep.Sessions, rep.ValuesMasked)
 
 	if len(rep.Guardrails) > 0 {
 		p("\nGuardrail violations: %s\n", comma(int64(len(rep.Guardrails))))
@@ -91,9 +91,11 @@ func Terminal(w io.Writer, rep risk.Report) {
 const maxValuesPerSession = 20
 
 // printValues renders the matched high-severity values that risk.Build kept on
-// the top critical sessions (populated only with -show-values). Repeated
-// values collapse into one line with an occurrence count.
-func printValues(w io.Writer, sessions []risk.SessionRow) {
+// the top critical sessions (populated only with -show-values or
+// -mask-values). Repeated values collapse into one line with an occurrence
+// count. masked flips the caption: masked values are already anonymized, raw
+// ones warrant the sensitivity warning.
+func printValues(w io.Writer, sessions []risk.SessionRow, masked bool) {
 	any := false
 	for _, s := range sessions {
 		if len(s.Values) > 0 {
@@ -106,7 +108,11 @@ func printValues(w io.Writer, sessions []risk.SessionRow) {
 	}
 
 	fmt.Fprintf(w, "\nMatched values (top %d critical sessions, high severity only):\n", risk.MaxValueSessions)
-	fmt.Fprintf(w, "  Sensitive output: these are the detected values themselves. Not written to the HTML/JSON reports.\n")
+	if masked {
+		fmt.Fprintf(w, "  Values are masked to their last 4 characters. Not written to the HTML/JSON reports.\n")
+	} else {
+		fmt.Fprintf(w, "  Sensitive output: these are the detected values themselves. Not written to the HTML/JSON reports.\n")
+	}
 	for _, s := range sessions {
 		if len(s.Values) == 0 {
 			continue

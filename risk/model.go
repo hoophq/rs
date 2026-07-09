@@ -59,6 +59,10 @@ type Meta struct {
 	// CriticalWeight is the score penalty weight for critical sessions.
 	// Zero means DefaultCriticalWeight.
 	CriticalWeight float64
+	// ValuesMasked records that the captured matched values were anonymized
+	// (masked to their last characters) before entering the model, so the
+	// terminal renderer can label them accordingly.
+	ValuesMasked bool
 }
 
 // Tier is one risk bucket with its session count and share.
@@ -124,6 +128,10 @@ type Report struct {
 	PII           []EntityAgg  `json:"pii"`
 	Sessions      []SessionRow `json:"sessions"`
 	Guardrails    []Violation  `json:"guardrails"`
+
+	// ValuesMasked mirrors Meta.ValuesMasked for the terminal renderer. Like
+	// SessionRow.Values it never reaches the machine-readable report.
+	ValuesMasked bool `json:"-"`
 }
 
 // Build computes the risk summary from the per-session aggregates.
@@ -188,7 +196,13 @@ func Build(meta Meta, sessions []SessionInput) Report {
 		if ri != rj {
 			return ri < rj
 		}
-		return pii[i].Total > pii[j].Total
+		if pii[i].Total != pii[j].Total {
+			return pii[i].Total > pii[j].Total
+		}
+		// Tie-break on the entity name: the slice is built from map iteration,
+		// so without it the order of equal-severity, equal-count entities
+		// changes from run to run.
+		return pii[i].Entity < pii[j].Entity
 	})
 
 	// critical sessions first, then by exposure magnitude within each tier
@@ -230,6 +244,7 @@ func Build(meta Meta, sessions []SessionInput) Report {
 		GeneratedAt:   meta.GeneratedAt,
 		Sources:       meta.Sources,
 		WindowDays:    meta.WindowDays,
+		ValuesMasked:  meta.ValuesMasked,
 		SecurityScore: securityScore(total, tierCount["critical"], tierCount["minor"], meta.CriticalWeight),
 		Totals: Totals{
 			Sessions:         total,
