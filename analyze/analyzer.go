@@ -26,3 +26,12 @@ type Finding struct {
 type Analyzer interface {
 	Analyze(text string) ([]Finding, error)
 }
+
+// BatchAnalyzer is an optional extension for engines that can analyze several
+// texts in one call. Model-backed engines run one inference pass for the whole
+// batch, which amortizes per-call overhead; results are per text, in input
+// order, and identical to calling Analyze on each text.
+type BatchAnalyzer interface {
+	Analyzer
+	AnalyzeBatch(texts []string) ([][]Finding, error)
+}
