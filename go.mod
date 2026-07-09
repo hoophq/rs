@@ -3,8 +3,8 @@ module github.com/hoophq/rs
 go 1.26
 
 require (
-	github.com/hoophq/alcatraz v0.3.1
-	github.com/hoophq/alcatraz/ner v0.0.0-20260708212236-32ade979ab8d
+	github.com/hoophq/alcatraz v0.4.0
+	github.com/hoophq/alcatraz/ner v0.0.0-20260709201705-53cd120c6c5a
 	github.com/knights-analytics/hugot v0.7.5
 )
 
