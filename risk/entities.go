@@ -92,8 +92,8 @@ var catalog = map[string]EntityInfo{
 	"IP_ADDRESS":    {SeverityMedium, "Network"},
 	"URL":           {SeverityLow, "Network"},
 
-	// Identity (statistical NER; emitted by the alcatraz engine unless the
-	// user opts out with -ner=false).
+	// Identity (statistical NER; emitted by the alcatraz engine when the
+	// user opts in with -ner).
 	"PERSON":   {SeverityLow, "Identity"},
 	"LOCATION": {SeverityLow, "Identity"},
 	"NRP":      {SeverityLow, "Identity"},
